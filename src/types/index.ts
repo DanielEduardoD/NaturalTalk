@@ -21,6 +21,8 @@ export interface SpeakerProfile {
   nativeLanguage: string;     // language code, e.g. "en", "es"
   apiKey: string;
   apiProvider: 'anthropic' | 'openai';
+  /** 'lovable' uses the built-in AI (no key needed); 'own' uses the user's API key. */
+  aiBackend: 'lovable' | 'own';
   defaultTone: ToneSettings;
 }
 
