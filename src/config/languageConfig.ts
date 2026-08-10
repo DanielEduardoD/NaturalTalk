@@ -47,6 +47,45 @@ export interface LanguageConfig {
 
 export const LANGUAGE_CONFIGS: Record<string, LanguageConfig> = {
 
+  en: {
+    code: 'en',
+    name: 'English',
+    flag: '🇬🇧',
+    tier: 1,
+    usesNonLatinScript: false,
+    needsRomanization: false,
+    romanizationLabel: '',
+    isRTL: false,
+    dialects: [
+      { code: 'american', label: 'American English' },
+      { code: 'british', label: 'British English' },
+      { code: 'australian', label: 'Australian English' },
+    ],
+    hasPronounSystem: false,
+    pronounOptions: { selfLabel: '', recipientLabel: '', selfOptions: [], recipientOptions: [] },
+    hasFormality: true,
+    formalityLabel: 'Register',
+    formalityLevels: [
+      { value: 'casual', label: 'Casual — friends, peers, romantic' },
+      { value: 'neutral', label: 'Neutral — everyday' },
+      { value: 'formal', label: 'Formal — professional, strangers' },
+    ],
+    hasSpeechLevels: false,
+    speechLevelLabel: '',
+    speechLevels: [],
+    hasGendering: false,
+    genderingNote: '',
+    ageHierarchyWeight: 'none',
+    ageHierarchyNote: '',
+    slangCapability: 'excellent',
+    languageSpecificPromptRules: `ENGLISH-SPECIFIC RULES:
+- Apply the configured regional variant (American / British / Australian) for spelling and slang.
+- Gen Z English texting: lowercase styling, "fr", "ngl", "istg", "lowkey/highkey", "bet", "no cap", "iykyk", "rn", "tbh", "lmao".
+- Avoid stiff, textbook phrasing. Contractions are the default in casual registers.
+- Match the configured register: casual texting drops punctuation and capitalization; formal keeps them.`,
+  },
+
+
   ja: {
     code: 'ja',
     name: 'Japanese',
