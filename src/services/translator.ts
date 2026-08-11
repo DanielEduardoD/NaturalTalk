@@ -1,4 +1,4 @@
-import type { TranslationResponse } from "../types";
+import type { TranslationOption, TranslationResponse } from "../types";
 import { translateWithLovableAi } from "../lib/translate.functions";
 
 export class TranslationError extends Error {
@@ -7,6 +7,25 @@ export class TranslationError extends Error {
     super(message);
     this.kind = kind;
   }
+}
+
+type RawOption = Partial<TranslationOption>;
+type RawResponse = Partial<TranslationResponse> & {
+  /** Older single-result shape, still accepted for resilience. */
+  translation?: string;
+  romanization?: string;
+  literal?: string;
+  options?: RawOption[];
+};
+
+function normalizeOption(raw: RawOption): TranslationOption | null {
+  if (!raw?.translation) return null;
+  return {
+    translation: raw.translation,
+    romanization: raw.romanization ?? "",
+    literal: raw.literal ?? "",
+    style_label: raw.style_label ?? "",
+  };
 }
 
 function extractJson(raw: string): TranslationResponse {
@@ -19,11 +38,26 @@ function extractJson(raw: string): TranslationResponse {
     throw new TranslationError("parse", "Unexpected response. Please try again.");
   }
   try {
-    const parsed = JSON.parse(text.slice(start, end + 1)) as Partial<TranslationResponse>;
-    if (!parsed.translation) throw new Error("missing translation");
+    const parsed = JSON.parse(text.slice(start, end + 1)) as RawResponse;
+    const options = (
+      Array.isArray(parsed.options) && parsed.options.length > 0
+        ? parsed.options
+        : [
+            {
+              translation: parsed.translation,
+              romanization: parsed.romanization,
+              literal: parsed.literal,
+              style_label: "",
+            },
+          ]
+    )
+      .map(normalizeOption)
+      .filter((option): option is TranslationOption => option !== null);
+
+    if (options.length === 0) throw new Error("missing translation");
+
     return {
-      translation: parsed.translation,
-      romanization: parsed.romanization ?? "",
+      options,
       breakdown: Array.isArray(parsed.breakdown) ? parsed.breakdown : [],
       vocabulary: Array.isArray(parsed.vocabulary) ? parsed.vocabulary : [],
       tone_note: parsed.tone_note ?? "",
@@ -32,6 +66,7 @@ function extractJson(raw: string): TranslationResponse {
     throw new TranslationError("parse", "Unexpected response. Please try again.");
   }
 }
+
 
 export type HistoryMessage = { role: "user" | "assistant"; content: string };
 
