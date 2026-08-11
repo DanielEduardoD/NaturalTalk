@@ -4,15 +4,18 @@ import type { SpeakerProfile } from "../types";
 
 export const DEFAULT_SPEAKER: SpeakerProfile = {
   name: "",
-  age: 24,
-  gender: "male",
-  nativeLanguage: "en",
+  age: null,
+  gender: null,
+  nativeLanguage: "",
   apiKey: "",
   apiProvider: "anthropic",
   aiBackend: "lovable",
+  optionCount: 3,
+  hasSetOptionPreference: false,
   defaultTone: {
     tone: "casual",
-    ageStyle: "22-25",
+    ageStyle: "none",
+    customAge: null,
     slangLevel: "medium",
     internetLanguage: true,
   },
@@ -21,9 +24,11 @@ export const DEFAULT_SPEAKER: SpeakerProfile = {
 interface SpeakerStore {
   profile: SpeakerProfile | null;
   hasCompletedOnboarding: boolean;
+  hasSeenLanding: boolean;
   setProfile: (profile: SpeakerProfile) => void;
   updateProfile: (updates: Partial<SpeakerProfile>) => void;
   setOnboardingComplete: () => void;
+  setSeenLanding: () => void;
   reset: () => void;
 }
 
@@ -32,13 +37,15 @@ export const useSpeakerStore = create<SpeakerStore>()(
     (set) => ({
       profile: null,
       hasCompletedOnboarding: false,
+      hasSeenLanding: false,
       setProfile: (profile) => set({ profile }),
       updateProfile: (updates) =>
         set((state) => ({
           profile: { ...(state.profile ?? DEFAULT_SPEAKER), ...updates },
         })),
       setOnboardingComplete: () => set({ hasCompletedOnboarding: true }),
-      reset: () => set({ profile: null, hasCompletedOnboarding: false }),
+      setSeenLanding: () => set({ hasSeenLanding: true }),
+      reset: () => set({ profile: null, hasCompletedOnboarding: false, hasSeenLanding: false }),
     }),
     { name: "naturaltalk-speaker" },
   ),
