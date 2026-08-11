@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import db from "../services/database";
-import type { Conversation, Message, RecipientProfile, ToneSettings } from "../types";
+import type { Appearance, Conversation, Message, RecipientProfile, ToneSettings } from "../types";
 
 interface ConversationStore {
   conversations: Conversation[];
@@ -15,20 +15,41 @@ interface ConversationStore {
   ) => Promise<Conversation>;
   updateConversation: (
     id: string,
-    updates: { recipient?: RecipientProfile; toneOverrides?: Partial<ToneSettings> | null },
+    updates: {
+      recipient?: RecipientProfile;
+      toneOverrides?: Partial<ToneSettings> | null;
+      pinned?: boolean;
+      appearance?: Partial<Appearance> | null;
+    },
   ) => Promise<void>;
+  togglePinned: (id: string) => Promise<void>;
   deleteConversation: (id: string) => Promise<void>;
   addMessage: (message: Message) => Promise<void>;
+  updateMessage: (messageId: string, updates: Partial<Message>) => Promise<void>;
+  deleteMessage: (conversationId: string, messageId: string) => Promise<void>;
   updateMessageFeedback: (
     messageId: string,
     feedback: "up" | "down",
     detail?: string,
   ) => Promise<void>;
+  importData: (payload: {
+    conversations: Conversation[];
+    messages: Message[];
+  }) => Promise<{ conversations: number; messages: number }>;
   deleteAllConversations: () => Promise<void>;
 }
 
-const byUpdatedDesc = (a: Conversation, b: Conversation) =>
-  new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+const sortConversations = (a: Conversation, b: Conversation) => {
+  if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+  return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+};
+
+/** Older records predate pinning and per-chat appearance. */
+const normalize = (c: Conversation): Conversation => ({
+  ...c,
+  pinned: c.pinned ?? false,
+  appearance: c.appearance ?? null,
+});
 
 export const useConversationStore = create<ConversationStore>((set, get) => ({
   conversations: [],
@@ -38,7 +59,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
   setActiveConversation: (id) => set({ activeConversationId: id }),
 
   loadConversations: async () => {
-    const conversations = (await db.conversations.toArray()).sort(byUpdatedDesc);
+    const conversations = (await db.conversations.toArray()).map(normalize).sort(sortConversations);
     set({ conversations });
   },
 
@@ -56,9 +77,13 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
       updatedAt: now,
       recipient,
       toneOverrides: toneOverrides ?? null,
+      pinned: false,
+      appearance: null,
     };
     await db.conversations.add(conversation);
-    set((state) => ({ conversations: [conversation, ...state.conversations].sort(byUpdatedDesc) }));
+    set((state) => ({
+      conversations: [conversation, ...state.conversations].sort(sortConversations),
+    }));
     return conversation;
   },
 
@@ -68,7 +93,18 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
     set((state) => ({
       conversations: state.conversations
         .map((c) => (c.id === id ? { ...c, ...patch } : c))
-        .sort(byUpdatedDesc),
+        .sort(sortConversations),
+    }));
+  },
+
+  togglePinned: async (id) => {
+    const current = get().conversations.find((c) => c.id === id);
+    const pinned = !current?.pinned;
+    await db.conversations.update(id, { pinned });
+    set((state) => ({
+      conversations: state.conversations
+        .map((c) => (c.id === id ? { ...c, pinned } : c))
+        .sort(sortConversations),
     }));
   },
 
@@ -92,20 +128,50 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
       },
       conversations: state.conversations
         .map((c) => (c.id === message.conversationId ? { ...c, updatedAt: new Date() } : c))
-        .sort(byUpdatedDesc),
+        .sort(sortConversations),
+    }));
+  },
+
+  updateMessage: async (messageId, updates) => {
+    await db.messages.update(messageId, updates);
+    const { messages } = get();
+    const next: Record<string, Message[]> = {};
+    for (const [key, list] of Object.entries(messages)) {
+      next[key] = list.map((m) => (m.id === messageId ? { ...m, ...updates } : m));
+    }
+    set({ messages: next });
+  },
+
+  deleteMessage: async (conversationId, messageId) => {
+    await db.messages.delete(messageId);
+    set((state) => ({
+      messages: {
+        ...state.messages,
+        [conversationId]: (state.messages[conversationId] ?? []).filter((m) => m.id !== messageId),
+      },
     }));
   },
 
   updateMessageFeedback: async (messageId, feedback, detail) => {
-    await db.messages.update(messageId, { feedback, feedbackDetail: detail ?? "" });
-    const { messages } = get();
-    const next: Record<string, Message[]> = {};
-    for (const [key, list] of Object.entries(messages)) {
-      next[key] = list.map((m) =>
-        m.id === messageId ? { ...m, feedback, feedbackDetail: detail ?? "" } : m,
-      );
-    }
-    set({ messages: next });
+    await get().updateMessage(messageId, { feedback, feedbackDetail: detail ?? "" });
+  },
+
+  importData: async (payload) => {
+    const conversations = (payload.conversations ?? []).map((c) =>
+      normalize({
+        ...c,
+        createdAt: new Date(c.createdAt),
+        updatedAt: new Date(c.updatedAt),
+      }),
+    );
+    const messages = (payload.messages ?? []).map((m) => ({
+      ...m,
+      timestamp: new Date(m.timestamp),
+    }));
+    if (conversations.length) await db.conversations.bulkPut(conversations);
+    if (messages.length) await db.messages.bulkPut(messages);
+    await get().loadConversations();
+    return { conversations: conversations.length, messages: messages.length };
   },
 
   deleteAllConversations: async () => {
