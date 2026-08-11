@@ -9,7 +9,12 @@ export class TranslationError extends Error {
   }
 }
 
-type RawOption = Partial<TranslationOption>;
+type RawOption = {
+  translation?: string | undefined;
+  romanization?: string | undefined;
+  literal?: string | undefined;
+  style_label?: string | undefined;
+};
 type RawResponse = Partial<TranslationResponse> & {
   /** Older single-result shape, still accepted for resilience. */
   translation?: string;
@@ -17,6 +22,7 @@ type RawResponse = Partial<TranslationResponse> & {
   literal?: string;
   options?: RawOption[];
 };
+
 
 function normalizeOption(raw: RawOption): TranslationOption | null {
   if (!raw?.translation) return null;
