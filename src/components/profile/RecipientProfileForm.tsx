@@ -1,22 +1,31 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { LANGUAGE_CONFIGS } from "@/config/languageConfig";
+import { flagChoicesFor, regionExamplesFor } from "@/config/regionConfig";
 import type { Gender, RecipientProfile, RelationshipType } from "@/types";
-import { LanguagePicker } from "@/components/common/LanguagePicker";
-import { Field, Note, PillGroup, inputClass } from "@/components/common/ui-kit";
+import { LanguagePicker, languageLabel } from "@/components/common/LanguagePicker";
+import { Field, Note, Pill, PillGroup, inputClass } from "@/components/common/ui-kit";
 
 const GENDERS: { value: Gender; label: string }[] = [
   { value: "female", label: "Female" },
   { value: "male", label: "Male" },
   { value: "non-binary", label: "Non-binary" },
+  { value: "prefer-not-to-say", label: "Rather not say" },
 ];
 
 const RELATIONSHIPS: { value: RelationshipType; label: string }[] = [
-  { value: "romantic-partner", label: "💕 Partner" },
-  { value: "crush", label: "✨ Crush" },
   { value: "close-friend", label: "🤝 Close friend" },
   { value: "casual-friend", label: "🙂 Casual friend" },
   { value: "acquaintance", label: "👋 Acquaintance" },
-  { value: "older-person", label: "🎓 Older person" },
+  { value: "family", label: "🏠 Family" },
+  { value: "colleague", label: "💼 Colleague" },
+  { value: "manager", label: "📈 Manager / boss" },
+  { value: "client", label: "🤵 Client / customer" },
+  { value: "teacher", label: "🎓 Teacher / mentor" },
+  { value: "student", label: "📚 Student / mentee" },
+  { value: "service", label: "🛎️ Service / support" },
+  { value: "romantic-partner", label: "💞 Partner" },
+  { value: "crush", label: "✨ Crush" },
+  { value: "older-person", label: "🧓 Older person" },
   { value: "younger-person", label: "🌱 Younger person" },
   { value: "unknown", label: "❔ Not sure" },
 ];
@@ -25,11 +34,13 @@ export function emptyRecipient(nativeLanguage: string): RecipientProfile {
   return {
     name: "",
     age: null,
-    gender: "female",
-    relationship: "close-friend",
+    gender: null,
+    relationship: "unknown",
     sourceLanguage: nativeLanguage,
     targetLanguage: "",
     dialect: null,
+    region: null,
+    flagOverride: null,
     pronounSelf: null,
     pronounRecipient: null,
     formalityLevel: null,
@@ -40,6 +51,10 @@ export function emptyRecipient(nativeLanguage: string): RecipientProfile {
 
 const CUSTOM = "__custom__";
 
+const NAME_PLACEHOLDERS = ["e.g. Alex", "e.g. Ms. Tanaka", "e.g. Support team", "e.g. Sam"];
+const NOTES_PLACEHOLDER =
+  "e.g. Team lead on a shared project — keep it warm but professional. / Old classmate, we joke a lot.";
+
 export function RecipientProfileForm({
   value,
   onChange,
@@ -49,14 +64,12 @@ export function RecipientProfileForm({
 }) {
   const config = LANGUAGE_CONFIGS[value.targetLanguage];
   const set = (updates: Partial<RecipientProfile>) => onChange({ ...value, ...updates });
+  const [flagPickerOpen, setFlagPickerOpen] = useState(false);
 
   // Seed sensible defaults whenever the target language gains config-driven fields.
   useEffect(() => {
     if (!config) return;
     const updates: Partial<RecipientProfile> = {};
-    if (config.dialects.length > 0 && !value.dialect) {
-      updates.dialect = config.dialects[0]!.label;
-    }
     if (config.hasFormality && !value.formalityLevel) {
       updates.formalityLevel = config.formalityLevels[0]!.value;
     }
@@ -70,31 +83,37 @@ export function RecipientProfileForm({
   const sameLanguage =
     value.sourceLanguage && value.targetLanguage && value.sourceLanguage === value.targetLanguage;
 
+  const defaultFlag = languageLabel(value.targetLanguage).flag;
+  const flagChoices = value.targetLanguage ? flagChoicesFor(value.targetLanguage, defaultFlag) : [];
+  const regionExamples = regionExamplesFor(value.targetLanguage, value.dialect);
+
   return (
     <div className="space-y-5">
-      <Field label="Their name">
+      <Field label="Their name or label">
         <input
           value={value.name}
           onChange={(event) => set({ name: event.target.value })}
-          placeholder="e.g. Yuki"
+          placeholder={NAME_PLACEHOLDERS[0]}
           className={inputClass}
         />
       </Field>
 
-      <Field label="Their age">
+      <Field label="Their age" hint="Optional — helps with age-based politeness rules.">
         <input
-          type="number"
+          type="text"
           inputMode="numeric"
+          pattern="[0-9]*"
           value={value.age ?? ""}
-          onChange={(event) =>
-            set({ age: event.target.value === "" ? null : Number(event.target.value) })
-          }
+          onChange={(event) => {
+            const digits = event.target.value.replace(/\D/g, "").slice(0, 3);
+            set({ age: digits === "" ? null : Number(digits) });
+          }}
           placeholder="Optional"
           className={inputClass}
         />
       </Field>
 
-      <Field label="Their gender">
+      <Field label="Their gender" hint="Optional — only affects grammatical gender.">
         <PillGroup options={GENDERS} value={value.gender} onChange={(gender) => set({ gender })} />
       </Field>
 
@@ -120,6 +139,8 @@ export function RecipientProfileForm({
           set({
             targetLanguage: code,
             dialect: null,
+            region: null,
+            flagOverride: null,
             pronounSelf: null,
             pronounRecipient: null,
             formalityLevel: null,
@@ -132,20 +153,83 @@ export function RecipientProfileForm({
         <Note tone="highlight">Source and target language are the same.</Note>
       ) : null}
 
+      {value.targetLanguage ? (
+        <Field label="Flag shown for this language" hint="Pick whichever one you identify with.">
+          <button
+            type="button"
+            onClick={() => setFlagPickerOpen((v) => !v)}
+            className={`${inputClass} flex items-center justify-between text-left`}
+          >
+            <span className="text-lg">{value.flagOverride ?? defaultFlag}</span>
+            <span className="text-xs text-muted-foreground">
+              {flagPickerOpen ? "Close" : "Change"}
+            </span>
+          </button>
+          {flagPickerOpen ? (
+            <div className="mt-2 flex flex-wrap gap-2 rounded-xl border border-border bg-surface p-3">
+              {flagChoices.map((flag) => (
+                <button
+                  key={flag}
+                  type="button"
+                  onClick={() => {
+                    set({ flagOverride: flag });
+                    setFlagPickerOpen(false);
+                  }}
+                  className={`rounded-lg px-2 py-1 text-lg ${
+                    (value.flagOverride ?? defaultFlag) === flag ? "bg-primary/20" : "bg-field"
+                  }`}
+                >
+                  {flag}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </Field>
+      ) : null}
+
       <div className="animate-in fade-in space-y-5 duration-200">
         {config && config.dialects.length > 0 ? (
           <Field label="Dialect / variant">
             <select
               value={value.dialect ?? ""}
-              onChange={(event) => set({ dialect: event.target.value })}
+              onChange={(event) => set({ dialect: event.target.value || null, region: null })}
               className={inputClass}
             >
+              <option value="">Let the AI decide</option>
               {config.dialects.map((dialect) => (
                 <option key={dialect.code} value={dialect.label}>
                   {dialect.label}
                 </option>
               ))}
             </select>
+          </Field>
+        ) : null}
+
+        {value.targetLanguage ? (
+          <Field
+            label="City / region"
+            hint="Speech changes street by street. Naming a city gets you the local way of talking."
+          >
+            <input
+              value={value.region ?? ""}
+              onChange={(event) => set({ region: event.target.value || null })}
+              placeholder={regionExamples[0] ? `e.g. ${regionExamples[0]}` : "e.g. their home city"}
+              className={inputClass}
+            />
+            {regionExamples.length > 0 ? (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {regionExamples.map((example) => (
+                  <Pill
+                    key={example}
+                    active={value.region === example}
+                    onClick={() => set({ region: example })}
+                    className="px-3 py-1.5 text-xs"
+                  >
+                    {example}
+                  </Pill>
+                ))}
+              </div>
+            ) : null}
           </Field>
         ) : null}
 
@@ -212,12 +296,15 @@ export function RecipientProfileForm({
         ) : null}
       </div>
 
-      <Field label="Custom notes" hint="Anything the AI should know about this person or history.">
+      <Field
+        label="Custom notes"
+        hint="Anything the AI should know: the setting, the history, how formal it should feel."
+      >
         <textarea
           value={value.customNotes}
           onChange={(event) => set({ customNotes: event.target.value })}
           rows={3}
-          placeholder="e.g. We met at a language exchange, she teases me a lot"
+          placeholder={NOTES_PLACEHOLDER}
           className={inputClass}
         />
       </Field>
