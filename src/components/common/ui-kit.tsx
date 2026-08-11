@@ -36,7 +36,8 @@ export function PillGroup<T extends string>({
   className,
 }: {
   options: { value: T; label: string }[];
-  value: T;
+  /** null means "nothing selected yet" — no option is pre-highlighted. */
+  value: T | null;
   onChange: (value: T) => void;
   className?: string;
 }) {
@@ -54,6 +55,7 @@ export function PillGroup<T extends string>({
     </div>
   );
 }
+
 
 export function Field({
   label,
