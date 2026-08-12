@@ -13,4 +13,12 @@ db.version(1).stores({
   vocabulary: "id, language, dateAdded, sourceConversationId",
 });
 
+// v2 adds pinned conversations.
+db.version(2).stores({
+  conversations: "id, updatedAt, pinned",
+  messages: "id, conversationId, timestamp",
+  vocabulary: "id, language, dateAdded, sourceConversationId",
+});
+
+
 export default db;
