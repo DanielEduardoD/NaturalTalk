@@ -23,8 +23,12 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "Culturally intelligent rewrites, not literal translations.",
       },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://envision-builder-lab.lovable.app/" },
     ],
+    links: [{ rel: "canonical", href: "https://envision-builder-lab.lovable.app/" }],
   }),
+
   component: Dashboard,
 });
 
