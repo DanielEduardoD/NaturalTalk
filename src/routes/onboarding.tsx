@@ -121,14 +121,15 @@ function Onboarding() {
           </p>
           <PillGroup
             options={[
-              { value: 1, label: "Just one" },
-              { value: 3, label: "Up to 3 options" },
+              { value: "1", label: "Just one" },
+              { value: "3", label: "Up to 3 options" },
             ]}
-            value={draft.hasSetOptionPreference ? draft.optionCount : null}
-            onChange={(optionCount) =>
-              set({ optionCount, hasSetOptionPreference: true } as Partial<SpeakerProfile>)
+            value={draft.hasSetOptionPreference ? String(draft.optionCount) : null}
+            onChange={(value) =>
+              set({ optionCount: value === "1" ? 1 : 3, hasSetOptionPreference: true })
             }
           />
+
         </div>
       ) : null}
 
