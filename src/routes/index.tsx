@@ -158,6 +158,9 @@ function Dashboard() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-display text-base font-semibold">
+                        {conversation.pinned ? (
+                          <Pin className="mr-1 inline size-3.5 text-primary" />
+                        ) : null}
                         {conversation.recipient.name || "Unnamed"}
                       </p>
                       <p className="mt-0.5 truncate text-xs text-muted-foreground">
@@ -165,7 +168,7 @@ function Dashboard() {
                         {conversation.recipient.dialect ? ` · ${conversation.recipient.dialect}` : ""}
                       </p>
                     </div>
-                    <span className="shrink-0 text-xs text-muted-foreground">
+                    <span className="shrink-0 pr-14 text-xs text-muted-foreground">
                       {relativeTime(conversation.updatedAt)}
                     </span>
                   </div>
@@ -181,15 +184,42 @@ function Dashboard() {
                     </p>
                   ) : null}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => void deleteConversation(conversation.id)}
-                  className="absolute top-3 right-3 rounded-full p-1.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:text-destructive"
-                  aria-label="Delete conversation"
-                >
-                  <X className="size-4" />
-                </button>
+                <div className="absolute top-3 right-3 flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => void togglePinned(conversation.id)}
+                    className={
+                      conversation.pinned
+                        ? "rounded-full p-1.5 text-primary"
+                        : "rounded-full p-1.5 text-muted-foreground hover:text-foreground"
+                    }
+                    aria-label={conversation.pinned ? "Unpin conversation" : "Pin conversation"}
+                  >
+                    {conversation.pinned ? (
+                      <PinOff className="size-4" />
+                    ) : (
+                      <Pin className="size-4" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (
+                        confirm(
+                          `Delete the conversation with ${conversation.recipient.name || "this person"}? This cannot be undone.`,
+                        )
+                      ) {
+                        void deleteConversation(conversation.id);
+                      }
+                    }}
+                    className="rounded-full p-1.5 text-muted-foreground hover:text-destructive"
+                    aria-label="Delete conversation"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                </div>
               </div>
+
             );
           })}
         </div>
