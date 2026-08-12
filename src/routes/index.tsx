@@ -54,6 +54,7 @@ function relativeTime(date: Date) {
 function Dashboard() {
   const navigate = useNavigate();
   const hasCompletedOnboarding = useSpeakerStore((state) => state.hasCompletedOnboarding);
+  const hasSeenLanding = useSpeakerStore((state) => state.hasSeenLanding);
   const profile = useSpeakerStore((state) => state.profile);
   const conversations = useConversationStore((state) => state.conversations);
   const messages = useConversationStore((state) => state.messages);
@@ -61,6 +62,7 @@ function Dashboard() {
   const loadMessages = useConversationStore((state) => state.loadMessages);
   const createConversation = useConversationStore((state) => state.createConversation);
   const deleteConversation = useConversationStore((state) => state.deleteConversation);
+  const togglePinned = useConversationStore((state) => state.togglePinned);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
@@ -78,8 +80,14 @@ function Dashboard() {
   }, [conversations]);
 
   useEffect(() => {
-    if (hydrated && !hasCompletedOnboarding) void navigate({ to: "/onboarding" });
-  }, [hydrated, hasCompletedOnboarding, navigate]);
+    if (!hydrated) return;
+    if (!hasSeenLanding && !hasCompletedOnboarding) {
+      void navigate({ to: "/landing" });
+      return;
+    }
+    if (!hasCompletedOnboarding) void navigate({ to: "/onboarding" });
+  }, [hydrated, hasSeenLanding, hasCompletedOnboarding, navigate]);
+
 
   if (!hydrated) return <div className="min-h-screen bg-background" />;
 
