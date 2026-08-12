@@ -69,7 +69,7 @@ export interface RecipientProfile {
 }
 
 export type BubbleStyle = 'signal' | 'rounded' | 'square';
-export type AccentTheme = 'teal' | 'indigo' | 'amber' | 'rose' | 'forest' | 'slate';
+export type AccentTheme = 'violet' | 'teal' | 'indigo' | 'amber' | 'rose' | 'forest' | 'slate';
 export type Wallpaper = 'none' | 'dots' | 'grid' | 'aurora' | 'waves' | 'paper';
 
 export interface Appearance {

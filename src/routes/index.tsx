@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { BookOpen, Plus, Settings, X } from "lucide-react";
+import { BookOpen, Pin, PinOff, Plus, Settings, Trash2, X } from "lucide-react";
 import { useConversationStore } from "@/stores/conversationStore";
 import { useSpeakerStore } from "@/stores/speakerStore";
 import { LANGUAGE_CONFIGS } from "@/config/languageConfig";
@@ -23,8 +23,12 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "Culturally intelligent rewrites, not literal translations.",
       },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://envision-builder-lab.lovable.app/" },
     ],
+    links: [{ rel: "canonical", href: "https://envision-builder-lab.lovable.app/" }],
   }),
+
   component: Dashboard,
 });
 
@@ -54,6 +58,7 @@ function relativeTime(date: Date) {
 function Dashboard() {
   const navigate = useNavigate();
   const hasCompletedOnboarding = useSpeakerStore((state) => state.hasCompletedOnboarding);
+  const hasSeenLanding = useSpeakerStore((state) => state.hasSeenLanding);
   const profile = useSpeakerStore((state) => state.profile);
   const conversations = useConversationStore((state) => state.conversations);
   const messages = useConversationStore((state) => state.messages);
@@ -61,6 +66,7 @@ function Dashboard() {
   const loadMessages = useConversationStore((state) => state.loadMessages);
   const createConversation = useConversationStore((state) => state.createConversation);
   const deleteConversation = useConversationStore((state) => state.deleteConversation);
+  const togglePinned = useConversationStore((state) => state.togglePinned);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
@@ -78,8 +84,14 @@ function Dashboard() {
   }, [conversations]);
 
   useEffect(() => {
-    if (hydrated && !hasCompletedOnboarding) void navigate({ to: "/onboarding" });
-  }, [hydrated, hasCompletedOnboarding, navigate]);
+    if (!hydrated) return;
+    if (!hasSeenLanding && !hasCompletedOnboarding) {
+      void navigate({ to: "/landing" });
+      return;
+    }
+    if (!hasCompletedOnboarding) void navigate({ to: "/onboarding" });
+  }, [hydrated, hasSeenLanding, hasCompletedOnboarding, navigate]);
+
 
   if (!hydrated) return <div className="min-h-screen bg-background" />;
 
@@ -150,6 +162,9 @@ function Dashboard() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-display text-base font-semibold">
+                        {conversation.pinned ? (
+                          <Pin className="mr-1 inline size-3.5 text-primary" />
+                        ) : null}
                         {conversation.recipient.name || "Unnamed"}
                       </p>
                       <p className="mt-0.5 truncate text-xs text-muted-foreground">
@@ -157,7 +172,7 @@ function Dashboard() {
                         {conversation.recipient.dialect ? ` · ${conversation.recipient.dialect}` : ""}
                       </p>
                     </div>
-                    <span className="shrink-0 text-xs text-muted-foreground">
+                    <span className="shrink-0 pr-14 text-xs text-muted-foreground">
                       {relativeTime(conversation.updatedAt)}
                     </span>
                   </div>
@@ -173,15 +188,42 @@ function Dashboard() {
                     </p>
                   ) : null}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => void deleteConversation(conversation.id)}
-                  className="absolute top-3 right-3 rounded-full p-1.5 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:text-destructive"
-                  aria-label="Delete conversation"
-                >
-                  <X className="size-4" />
-                </button>
+                <div className="absolute top-3 right-3 flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => void togglePinned(conversation.id)}
+                    className={
+                      conversation.pinned
+                        ? "rounded-full p-1.5 text-primary"
+                        : "rounded-full p-1.5 text-muted-foreground hover:text-foreground"
+                    }
+                    aria-label={conversation.pinned ? "Unpin conversation" : "Pin conversation"}
+                  >
+                    {conversation.pinned ? (
+                      <PinOff className="size-4" />
+                    ) : (
+                      <Pin className="size-4" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (
+                        confirm(
+                          `Delete the conversation with ${conversation.recipient.name || "this person"}? This cannot be undone.`,
+                        )
+                      ) {
+                        void deleteConversation(conversation.id);
+                      }
+                    }}
+                    className="rounded-full p-1.5 text-muted-foreground hover:text-destructive"
+                    aria-label="Delete conversation"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                </div>
               </div>
+
             );
           })}
         </div>

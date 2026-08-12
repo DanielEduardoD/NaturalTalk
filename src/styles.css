@@ -58,20 +58,21 @@
   --card-foreground: oklch(0.957 0.008 286.2);
   --popover: oklch(0.239 0.015 285.2);
   --popover-foreground: oklch(0.957 0.008 286.2);
-  --primary: oklch(0.784 0.137 187.6);
-  --primary-foreground: oklch(0.193 0.008 285.6);
+  --primary: oklch(0.66 0.18 295);
+  --primary-foreground: oklch(0.985 0.005 285);
   --secondary: oklch(0.29 0.02 285.1);
   --secondary-foreground: oklch(0.957 0.008 286.2);
   --muted: oklch(0.29 0.02 285.1);
   --muted-foreground: oklch(0.644 0.031 285.5);
-  --accent: oklch(0.709 0.184 28.7);
-  --accent-foreground: oklch(0.193 0.008 285.6);
-  --destructive: oklch(0.711 0.166 22.2);
-  --destructive-foreground: oklch(0.193 0.008 285.6);
+  --accent: oklch(0.66 0.18 295);
+  --accent-foreground: oklch(0.985 0.005 285);
+  --destructive: oklch(0.62 0.14 12);
+  --destructive-foreground: oklch(0.985 0.005 285);
   --success: oklch(0.8 0.182 151.7);
   --border: oklch(0.306 0.021 285.1);
   --input: oklch(0.306 0.021 285.1);
-  --ring: oklch(0.784 0.137 187.6);
+  --ring: oklch(0.66 0.18 295);
+
 }
 
 .dark {
@@ -134,26 +135,52 @@
 }
 
 /* Accent themes — applied via data-accent on a container. */
+[data-accent="violet"] {
+  --primary: oklch(0.66 0.18 295);
+  --accent: oklch(0.66 0.18 295);
+  --primary-foreground: oklch(0.985 0.005 285);
+  --accent-foreground: oklch(0.985 0.005 285);
+  --ring: oklch(0.66 0.18 295);
+}
+[data-accent="teal"] {
+  --primary: oklch(0.784 0.137 187.6);
+  --accent: oklch(0.784 0.137 187.6);
+  --primary-foreground: oklch(0.193 0.008 285.6);
+  --accent-foreground: oklch(0.193 0.008 285.6);
+  --ring: oklch(0.784 0.137 187.6);
+}
 [data-accent="indigo"] {
   --primary: oklch(0.68 0.15 274);
+  --accent: oklch(0.68 0.15 274);
   --ring: oklch(0.68 0.15 274);
 }
 [data-accent="amber"] {
   --primary: oklch(0.82 0.15 82);
+  --accent: oklch(0.82 0.15 82);
+  --primary-foreground: oklch(0.193 0.008 285.6);
+  --accent-foreground: oklch(0.193 0.008 285.6);
   --ring: oklch(0.82 0.15 82);
 }
 [data-accent="rose"] {
   --primary: oklch(0.74 0.16 12);
+  --accent: oklch(0.74 0.16 12);
   --ring: oklch(0.74 0.16 12);
 }
 [data-accent="forest"] {
   --primary: oklch(0.74 0.15 152);
+  --accent: oklch(0.74 0.15 152);
+  --primary-foreground: oklch(0.193 0.008 285.6);
+  --accent-foreground: oklch(0.193 0.008 285.6);
   --ring: oklch(0.74 0.15 152);
 }
 [data-accent="slate"] {
   --primary: oklch(0.72 0.03 250);
+  --accent: oklch(0.72 0.03 250);
+  --primary-foreground: oklch(0.193 0.008 285.6);
+  --accent-foreground: oklch(0.193 0.008 285.6);
   --ring: oklch(0.72 0.03 250);
 }
+
 
 /* Chat wallpapers */
 .wallpaper-dots {

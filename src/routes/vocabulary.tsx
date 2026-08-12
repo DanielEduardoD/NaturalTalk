@@ -29,7 +29,7 @@ export const Route = createFileRoute("/vocabulary")({
 const STATUS_CYCLE: VocabWord["studyStatus"][] = ["new", "learning", "known"];
 const STATUS_STYLES: Record<VocabWord["studyStatus"], string> = {
   new: "bg-field text-muted-foreground",
-  learning: "bg-amber-500/20 text-amber-400",
+  learning: "bg-primary/10 text-primary/80",
   known: "bg-primary/20 text-primary",
 };
 
