@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { BookOpen, Plus, Settings, X } from "lucide-react";
+import { BookOpen, Pin, PinOff, Plus, Settings, Trash2, X } from "lucide-react";
 import { useConversationStore } from "@/stores/conversationStore";
 import { useSpeakerStore } from "@/stores/speakerStore";
 import { LANGUAGE_CONFIGS } from "@/config/languageConfig";
