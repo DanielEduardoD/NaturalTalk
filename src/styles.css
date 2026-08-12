@@ -135,26 +135,52 @@
 }
 
 /* Accent themes — applied via data-accent on a container. */
+[data-accent="violet"] {
+  --primary: oklch(0.66 0.18 295);
+  --accent: oklch(0.66 0.18 295);
+  --primary-foreground: oklch(0.985 0.005 285);
+  --accent-foreground: oklch(0.985 0.005 285);
+  --ring: oklch(0.66 0.18 295);
+}
+[data-accent="teal"] {
+  --primary: oklch(0.784 0.137 187.6);
+  --accent: oklch(0.784 0.137 187.6);
+  --primary-foreground: oklch(0.193 0.008 285.6);
+  --accent-foreground: oklch(0.193 0.008 285.6);
+  --ring: oklch(0.784 0.137 187.6);
+}
 [data-accent="indigo"] {
   --primary: oklch(0.68 0.15 274);
+  --accent: oklch(0.68 0.15 274);
   --ring: oklch(0.68 0.15 274);
 }
 [data-accent="amber"] {
   --primary: oklch(0.82 0.15 82);
+  --accent: oklch(0.82 0.15 82);
+  --primary-foreground: oklch(0.193 0.008 285.6);
+  --accent-foreground: oklch(0.193 0.008 285.6);
   --ring: oklch(0.82 0.15 82);
 }
 [data-accent="rose"] {
   --primary: oklch(0.74 0.16 12);
+  --accent: oklch(0.74 0.16 12);
   --ring: oklch(0.74 0.16 12);
 }
 [data-accent="forest"] {
   --primary: oklch(0.74 0.15 152);
+  --accent: oklch(0.74 0.15 152);
+  --primary-foreground: oklch(0.193 0.008 285.6);
+  --accent-foreground: oklch(0.193 0.008 285.6);
   --ring: oklch(0.74 0.15 152);
 }
 [data-accent="slate"] {
   --primary: oklch(0.72 0.03 250);
+  --accent: oklch(0.72 0.03 250);
+  --primary-foreground: oklch(0.193 0.008 285.6);
+  --accent-foreground: oklch(0.193 0.008 285.6);
   --ring: oklch(0.72 0.03 250);
 }
+
 
 /* Chat wallpapers */
 .wallpaper-dots {
