@@ -3,14 +3,15 @@ import { persist } from "zustand/middleware";
 import type { AccentTheme, Appearance, BubbleStyle, Wallpaper } from "../types";
 
 export const DEFAULT_APPEARANCE: Appearance = {
-  accent: "teal",
+  accent: "violet",
   bubbleStyle: "signal",
   wallpaper: "none",
-  outgoingTint: "teal",
+  outgoingTint: "violet",
   compact: false,
 };
 
 export const ACCENT_THEMES: { value: AccentTheme; label: string; swatch: string }[] = [
+  { value: "violet", label: "Violet", swatch: "oklch(0.66 0.18 295)" },
   { value: "teal", label: "Teal", swatch: "oklch(0.784 0.137 187.6)" },
   { value: "indigo", label: "Indigo", swatch: "oklch(0.68 0.15 274)" },
   { value: "amber", label: "Amber", swatch: "oklch(0.82 0.15 82)" },
@@ -18,6 +19,7 @@ export const ACCENT_THEMES: { value: AccentTheme; label: string; swatch: string 
   { value: "forest", label: "Forest", swatch: "oklch(0.74 0.15 152)" },
   { value: "slate", label: "Slate", swatch: "oklch(0.72 0.03 250)" },
 ];
+
 
 export const BUBBLE_STYLES: { value: BubbleStyle; label: string }[] = [
   { value: "signal", label: "Tucked" },
