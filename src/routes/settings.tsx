@@ -1,13 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { DEFAULT_SPEAKER, useSpeakerStore } from "@/stores/speakerStore";
 import { useConversationStore } from "@/stores/conversationStore";
 import { useVocabStore } from "@/stores/vocabStore";
+import { useAppearanceStore } from "@/stores/appearanceStore";
 import { LanguagePicker } from "@/components/common/LanguagePicker";
 import { ToneControls } from "@/components/common/ToneControls";
+import { ChatAppearanceControls } from "@/components/common/AppearanceControls";
 import { Field, PillGroup, inputClass } from "@/components/common/ui-kit";
 import { testAnthropicKey } from "@/services/translator";
+import { decryptJson, encryptJson, isEncryptedPayload } from "@/lib/crypto";
+import db from "@/services/database";
 import type { Gender, SpeakerProfile } from "@/types";
 
 export const Route = createFileRoute("/settings")({
@@ -16,11 +20,15 @@ export const Route = createFileRoute("/settings")({
       { title: "Settings — NaturalTalk" },
       {
         name: "description",
-        content: "Manage your profile, default style, AI backend and local data in NaturalTalk.",
+        content:
+          "Manage your profile, default style, appearance, AI backend and encrypted backups in NaturalTalk.",
       },
       { property: "og:title", content: "Settings — NaturalTalk" },
       { property: "og:description", content: "Your profile, style defaults and privacy controls." },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://envision-builder-lab.lovable.app/settings" },
     ],
+    links: [{ rel: "canonical", href: "https://envision-builder-lab.lovable.app/settings" }],
   }),
   component: SettingsPage,
 });
@@ -36,14 +44,19 @@ function SettingsPage() {
   const profile = useSpeakerStore((state) => state.profile);
   const updateProfile = useSpeakerStore((state) => state.updateProfile);
   const deleteAllConversations = useConversationStore((state) => state.deleteAllConversations);
+  const importData = useConversationStore((state) => state.importData);
   const deleteAllWords = useVocabStore((state) => state.deleteAll);
-  const conversations = useConversationStore((state) => state.conversations);
-  const words = useVocabStore((state) => state.words);
   const loadConversations = useConversationStore((state) => state.loadConversations);
   const loadWords = useVocabStore((state) => state.loadWords);
+  const appearance = useAppearanceStore((state) => state.appearance);
+  const updateAppearance = useAppearanceStore((state) => state.update);
+  const resetAppearance = useAppearanceStore((state) => state.reset);
 
   const [showKey, setShowKey] = useState(false);
   const [keyStatus, setKeyStatus] = useState<"idle" | "testing" | "ok" | "bad">("idle");
+  const [exportPassword, setExportPassword] = useState("");
+  const [status, setStatus] = useState<string | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     void loadConversations();
@@ -52,17 +65,80 @@ function SettingsPage() {
 
   const current: SpeakerProfile = profile ?? DEFAULT_SPEAKER;
 
-  const exportData = () => {
-    const blob = new Blob(
-      [JSON.stringify({ profile: current, conversations, vocabulary: words }, null, 2)],
-      { type: "application/json" },
-    );
+  const download = (content: string, filename: string) => {
+    const blob = new Blob([content], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "naturaltalk-data.json";
+    link.download = filename;
     link.click();
     URL.revokeObjectURL(url);
+  };
+
+  const exportData = async () => {
+    setStatus(null);
+    const payload = {
+      format: "naturaltalk-backup",
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      profile: current,
+      appearance,
+      conversations: await db.conversations.toArray(),
+      messages: await db.messages.toArray(),
+      vocabulary: await db.vocabulary.toArray(),
+    };
+
+    if (exportPassword.trim().length >= 6) {
+      const encrypted = await encryptJson(payload, exportPassword.trim());
+      download(JSON.stringify(encrypted, null, 2), "naturaltalk-backup.encrypted.json");
+      setStatus("Encrypted backup downloaded. Keep the password safe — it cannot be recovered.");
+      return;
+    }
+    if (exportPassword.trim().length > 0) {
+      setStatus("Password must be at least 6 characters.");
+      return;
+    }
+    download(JSON.stringify(payload, null, 2), "naturaltalk-backup.json");
+    setStatus("Plain backup downloaded. Anyone with this file can read your conversations.");
+  };
+
+  const importFile = async (file: File) => {
+    setStatus(null);
+    try {
+      let parsed: unknown = JSON.parse(await file.text());
+      if (isEncryptedPayload(parsed)) {
+        const password = prompt("This backup is encrypted. Enter its password:");
+        if (!password) return;
+        parsed = await decryptJson(parsed, password);
+      }
+      const data = parsed as {
+        profile?: SpeakerProfile;
+        appearance?: typeof appearance;
+        conversations?: never[];
+        messages?: never[];
+        vocabulary?: never[];
+      };
+      if (data.profile) updateProfile(data.profile);
+      if (data.appearance) updateAppearance(data.appearance);
+      const result = await importData({
+        conversations: data.conversations ?? [],
+        messages: data.messages ?? [],
+      });
+      if (data.vocabulary?.length) {
+        await db.vocabulary.bulkPut(
+          (data.vocabulary as { dateAdded: string }[]).map((w) => ({
+            ...w,
+            dateAdded: new Date(w.dateAdded),
+          })) as never[],
+        );
+        await loadWords();
+      }
+      setStatus(
+        `Imported ${result.conversations} conversations, ${result.messages} messages and ${data.vocabulary?.length ?? 0} saved words.`,
+      );
+    } catch {
+      setStatus("Could not read that file — wrong password or not a NaturalTalk backup.");
+    }
   };
 
   return (
@@ -102,6 +178,32 @@ function SettingsPage() {
           label="Native language"
           value={current.nativeLanguage}
           onChange={(code) => updateProfile({ nativeLanguage: code })}
+        />
+      </Section>
+
+      <Section title="Translation options">
+        <Field label="Rewrites per message">
+          <PillGroup
+            options={[
+              { value: "1", label: "Just one" },
+              { value: "3", label: "Up to 3 options" },
+            ]}
+            value={String(current.optionCount)}
+            onChange={(value) =>
+              updateProfile({ optionCount: value === "1" ? 1 : 3, hasSetOptionPreference: true })
+            }
+          />
+        </Field>
+      </Section>
+
+      <Section title="Appearance">
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          App-wide defaults. Each conversation can override these from its own settings.
+        </p>
+        <ChatAppearanceControls
+          value={appearance}
+          onChange={updateAppearance}
+          onReset={resetAppearance}
         />
       </Section>
 
@@ -180,6 +282,44 @@ function SettingsPage() {
         />
       </Section>
 
+      <Section title="Backup & restore">
+        <Field label="Backup password" hint="Optional — 6+ characters enables encryption">
+          <input
+            type="password"
+            value={exportPassword}
+            onChange={(event) => setExportPassword(event.target.value)}
+            placeholder="Leave empty for a plain file"
+            className={inputClass}
+          />
+        </Field>
+        <button
+          type="button"
+          onClick={() => void exportData()}
+          className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground"
+        >
+          Export backup
+        </button>
+        <button
+          type="button"
+          onClick={() => fileInput.current?.click()}
+          className="w-full rounded-xl border border-border px-4 py-3 text-left text-sm"
+        >
+          Import backup from file
+        </button>
+        <input
+          ref={fileInput}
+          type="file"
+          accept="application/json,.json"
+          className="hidden"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) void importFile(file);
+            event.target.value = "";
+          }}
+        />
+        {status ? <p className="text-xs leading-relaxed text-primary">{status}</p> : null}
+      </Section>
+
       <Section title="Data & privacy">
         <button
           type="button"
@@ -203,16 +343,9 @@ function SettingsPage() {
         >
           Delete vocabulary list
         </button>
-        <button
-          type="button"
-          onClick={exportData}
-          className="w-full rounded-xl border border-border px-4 py-3 text-left text-sm"
-        >
-          Export all data as JSON
-        </button>
         <p className="text-xs leading-relaxed text-muted-foreground">
-          Your messages are sent only to the AI provider you configure. NaturalTalk never stores
-          your conversations or translations.
+          Everything lives in this browser. Your messages are sent only to the AI provider you
+          configure, and NaturalTalk never stores your conversations or translations.
         </p>
       </Section>
     </main>
