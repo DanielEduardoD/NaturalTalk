@@ -44,10 +44,10 @@ export interface SpeakerProfile {
   nativeLanguage: string;     // language code, e.g. "en", "es"
   apiKey: string;
   apiProvider: 'anthropic' | 'openai';
-  /** 'hosted' uses the built-in translation engine; 'own' uses the user's API key. */
-  aiBackend: 'hosted' | 'own';
+  /** 'lovable' uses the built-in AI (no key needed); 'own' uses the user's API key. */
+  aiBackend: 'lovable' | 'own';
   defaultTone: ToneSettings;
-  /** How many alternative rewrites to return (1 or 3). */
+  /** How many alternative rewrites the AI should return (1 or 3). */
   optionCount: 1 | 3;
   /** Whether the user has been asked about the option count preference. */
   hasSetOptionPreference: boolean;

@@ -1,8 +1,5 @@
 {
-  "name": "naturaltalk",
-  "version": "1.0.0",
-  "description": "Context-aware translation that sounds like a native speaker your age.",
-  "author": "Daniel Diaz (DD Enterprises)",
+  "name": "tanstack_start_ts",
   "private": true,
   "sideEffects": false,
   "type": "module",

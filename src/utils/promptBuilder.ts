@@ -36,7 +36,7 @@ export function buildSystemPrompt(
 ): string {
   const langConfig = LANGUAGE_CONFIGS[recipient.targetLanguage];
   const languageSpecificRules = langConfig?.languageSpecificPromptRules ||
-    `This language has general coverage. Apply your best knowledge of natural speech patterns,
+    `This language has general AI coverage. Apply your best knowledge of natural speech patterns,
     appropriate social register, and age-appropriate language for the configured relationship type.`;
 
   const sourceLangConfig = LANGUAGE_CONFIGS[recipient.sourceLanguage];

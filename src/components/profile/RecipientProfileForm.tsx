@@ -210,7 +210,7 @@ export function RecipientProfileForm({
               onChange={(event) => set({ dialect: event.target.value || null, region: null })}
               className={inputClass}
             >
-              <option value="">Let NaturalTalk decide</option>
+              <option value="">Let the AI decide</option>
               {config.dialects.map((dialect) => (
                 <option key={dialect.code} value={dialect.label}>
                   {dialect.label}
@@ -313,7 +313,7 @@ export function RecipientProfileForm({
 
       <Field
         label="Custom notes"
-        hint="Anything the translator should know: the setting, the history, how formal it should feel."
+        hint="Anything the AI should know: the setting, the history, how formal it should feel."
       >
         <textarea
           value={value.customNotes}
@@ -348,7 +348,7 @@ function PronounSelect({
         onChange={(event) => onChange(event.target.value === CUSTOM ? " " : event.target.value)}
         className={inputClass}
       >
-        <option value="">Let NaturalTalk decide</option>
+        <option value="">Let the AI decide</option>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}

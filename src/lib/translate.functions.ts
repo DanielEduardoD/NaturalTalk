@@ -13,16 +13,16 @@ const TranslateInput = z.object({
   userMessage: z.string().min(1),
 });
 
-export const translateWithHostedAi = createServerFn({ method: "POST" })
+export const translateWithLovableAi = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => TranslateInput.parse(input))
   .handler(async ({ data }) => {
     const key = process.env["LOVABLE_API_KEY"];
     if (!key) {
-      return { ok: false as const, error: "The translation engine is not configured on this project." };
+      return { ok: false as const, error: "AI is not configured on this project." };
     }
 
-    const { createHostedGatewayProvider } = await import("./gateway.server");
-    const gateway = createHostedGatewayProvider(key);
+    const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
+    const gateway = createLovableAiGatewayProvider(key);
 
     try {
       const result = streamText({
@@ -38,7 +38,7 @@ export const translateWithHostedAi = createServerFn({ method: "POST" })
         return { ok: false as const, error: "Rate limited. Please try again in a moment." };
       }
       if (message.includes("402")) {
-        return { ok: false as const, error: "Translation quota exhausted. Please try again later." };
+        return { ok: false as const, error: "AI credits exhausted. Add credits to continue." };
       }
       return { ok: false as const, error: message };
     }

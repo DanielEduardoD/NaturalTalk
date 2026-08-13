@@ -87,7 +87,7 @@ function Landing() {
         <h2 className="font-display text-sm font-semibold">Your data, your device</h2>
         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
           Profiles, conversations and vocabulary are stored locally in this browser. Message text is
-          sent to the translation engine only to produce a translation, and nothing is kept on our side. If
+          sent to the AI provider only to produce a translation, and nothing is kept on our side. If
           you clear browser data or uninstall the app, your history is gone — export a backup first.
         </p>
       </section>
