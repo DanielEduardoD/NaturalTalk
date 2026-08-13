@@ -19,10 +19,12 @@ interface ConversationStore {
       recipient?: RecipientProfile;
       toneOverrides?: Partial<ToneSettings> | null;
       pinned?: boolean;
+      archived?: boolean;
       appearance?: Partial<Appearance> | null;
     },
   ) => Promise<void>;
   togglePinned: (id: string) => Promise<void>;
+  toggleArchived: (id: string) => Promise<void>;
   deleteConversation: (id: string) => Promise<void>;
   addMessage: (message: Message) => Promise<void>;
   updateMessage: (messageId: string, updates: Partial<Message>) => Promise<void>;
@@ -48,6 +50,7 @@ const sortConversations = (a: Conversation, b: Conversation) => {
 const normalize = (c: Conversation): Conversation => ({
   ...c,
   pinned: c.pinned ?? false,
+  archived: c.archived ?? false,
   appearance: c.appearance ?? null,
 });
 
@@ -78,6 +81,7 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
       recipient,
       toneOverrides: toneOverrides ?? null,
       pinned: false,
+      archived: false,
       appearance: null,
     };
     await db.conversations.add(conversation);
@@ -104,6 +108,19 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
     set((state) => ({
       conversations: state.conversations
         .map((c) => (c.id === id ? { ...c, pinned } : c))
+        .sort(sortConversations),
+    }));
+  },
+
+  toggleArchived: async (id) => {
+    const current = get().conversations.find((c) => c.id === id);
+    const archived = !current?.archived;
+    // Archiving also clears the pin so the chat leaves the top of the list.
+    const patch = archived ? { archived, pinned: false } : { archived };
+    await db.conversations.update(id, patch);
+    set((state) => ({
+      conversations: state.conversations
+        .map((c) => (c.id === id ? { ...c, ...patch } : c))
         .sort(sortConversations),
     }));
   },

@@ -57,7 +57,7 @@ Source language (what they write in): ${sourceLanguageName}
 Name: ${recipient.name}
 Age: ${recipient.age || 'unspecified'}
 Gender: ${recipient.gender && recipient.gender !== 'prefer-not-to-say' ? recipient.gender : 'unspecified — avoid assuming grammatical gender for the recipient'}
-Relationship to speaker: ${recipient.relationship}
+Relationship to speaker: ${recipient.relationship === 'custom' && recipient.customRelationship ? recipient.customRelationship : recipient.relationship}
 ${recipient.pronounSelf ? `Pronoun for speaker to use: ${recipient.pronounSelf}` : ''}
 ${recipient.pronounRecipient ? `Pronoun for recipient: ${recipient.pronounRecipient}` : ''}
 ${recipient.dialect ? `Dialect/variant: ${recipient.dialect}` : ''}
@@ -70,7 +70,7 @@ Custom notes: ${recipient.customNotes || 'none'}
 ${targetLanguageName}${dialectNote}
 
 === TONE SETTINGS ===
-Overall tone: ${tone.tone}
+Overall tone: ${tone.tone === 'custom' && tone.customTone ? tone.customTone : tone.tone}
 Sound like: ${ageStyleDescription(tone, speaker.age)}
 Slang level: ${tone.slangLevel}
 Internet language / shortcuts: ${tone.internetLanguage ? 'ON — use shortcuts, abbreviations, and casual texting patterns common among native speakers of ' + targetLanguageName + ' in that age range. Use NATIVE equivalents, not English shortcuts.' : 'OFF'}

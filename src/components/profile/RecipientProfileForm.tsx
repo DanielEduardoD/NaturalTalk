@@ -28,6 +28,7 @@ const RELATIONSHIPS: { value: RelationshipType; label: string }[] = [
   { value: "older-person", label: "🧓 Older person" },
   { value: "younger-person", label: "🌱 Younger person" },
   { value: "unknown", label: "❔ Not sure" },
+  { value: "custom", label: "✏️ Custom…" },
 ];
 
 export function emptyRecipient(nativeLanguage: string): RecipientProfile {
@@ -36,6 +37,7 @@ export function emptyRecipient(nativeLanguage: string): RecipientProfile {
     age: null,
     gender: null,
     relationship: "unknown",
+    customRelationship: null,
     sourceLanguage: nativeLanguage,
     targetLanguage: "",
     dialect: null,
@@ -121,8 +123,21 @@ export function RecipientProfileForm({
         <PillGroup
           options={RELATIONSHIPS}
           value={value.relationship}
-          onChange={(relationship) => set({ relationship })}
+          onChange={(relationship) =>
+            set({
+              relationship,
+              customRelationship: relationship === "custom" ? value.customRelationship : null,
+            })
+          }
         />
+        {value.relationship === "custom" ? (
+          <input
+            value={value.customRelationship ?? ""}
+            onChange={(event) => set({ customRelationship: event.target.value })}
+            placeholder="Describe the relationship, e.g. band mate, landlord"
+            className={`${inputClass} mt-2`}
+          />
+        ) : null}
       </Field>
 
       <LanguagePicker
