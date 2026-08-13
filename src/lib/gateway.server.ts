@@ -1,8 +1,8 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
-const LOVABLE_AIG_RUN_ID_HEADER = "X-Lovable-AIG-Run-ID";
+const RUN_ID_HEADER = "X-Lovable-AIG-Run-ID";
 
-export function createLovableAiGatewayRunIdFetch(initialRunId?: string) {
+export function createHostedGatewayRunIdFetch(initialRunId?: string) {
   let runId = initialRunId?.trim() || undefined;
   let resolveRunId: (value: string | undefined) => void = () => {};
   let runIdResolved = false;
@@ -25,12 +25,12 @@ export function createLovableAiGatewayRunIdFetch(initialRunId?: string) {
   return {
     fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
       const headers = new Headers(init?.headers);
-      if (runId && !headers.has(LOVABLE_AIG_RUN_ID_HEADER)) {
-        headers.set(LOVABLE_AIG_RUN_ID_HEADER, runId);
+      if (runId && !headers.has(RUN_ID_HEADER)) {
+        headers.set(RUN_ID_HEADER, runId);
       }
       try {
         const response = await fetch(input, { ...init, headers });
-        publishRunId(response.headers.get(LOVABLE_AIG_RUN_ID_HEADER) ?? undefined);
+        publishRunId(response.headers.get(RUN_ID_HEADER) ?? undefined);
         return response;
       } catch (error) {
         publishRunId(undefined);
@@ -42,19 +42,19 @@ export function createLovableAiGatewayRunIdFetch(initialRunId?: string) {
   };
 }
 
-export function createLovableAiGatewayProvider(
-  lovableApiKey: string,
+export function createHostedGatewayProvider(
+  gatewayApiKey: string,
   initialRunId?: string,
   options?: { structuredOutputs?: boolean },
 ) {
-  const runIdFetch = createLovableAiGatewayRunIdFetch(initialRunId);
+  const runIdFetch = createHostedGatewayRunIdFetch(initialRunId);
 
   const provider = createOpenAICompatible({
     name: "lovable",
     baseURL: "https://ai.gateway.lovable.dev/v1",
     supportsStructuredOutputs: options?.structuredOutputs ?? false,
     headers: {
-      "Lovable-API-Key": lovableApiKey,
+      "Lovable-API-Key": gatewayApiKey,
       "X-Lovable-AIG-SDK": "vercel-ai-sdk",
     },
     fetch: runIdFetch.fetch as unknown as typeof fetch,
