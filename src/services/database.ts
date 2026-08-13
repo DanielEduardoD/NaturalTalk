@@ -20,5 +20,11 @@ db.version(2).stores({
   vocabulary: "id, language, dateAdded, sourceConversationId",
 });
 
+// v3 adds archived conversations.
+db.version(3).stores({
+  conversations: "id, updatedAt, pinned, archived",
+  messages: "id, conversationId, timestamp",
+  vocabulary: "id, language, dateAdded, sourceConversationId",
+});
 
 export default db;

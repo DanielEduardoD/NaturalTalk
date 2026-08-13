@@ -10,6 +10,7 @@ const TONES: { value: ToneType; label: string }[] = [
   { value: "neutral", label: "Neutral" },
   { value: "professional", label: "Professional" },
   { value: "formal", label: "Formal" },
+  { value: "custom", label: "✏️ Custom…" },
 ];
 
 const AGE_STYLES: { value: AgeStyle; label: string }[] = [
@@ -48,8 +49,18 @@ export function ToneControls({
         <PillGroup
           options={TONES}
           value={allowUnset && !value.tone ? null : value.tone}
-          onChange={(tone) => onChange({ ...value, tone })}
+          onChange={(tone) =>
+            onChange({ ...value, tone, customTone: tone === "custom" ? value.customTone : null })
+          }
         />
+        {value.tone === "custom" ? (
+          <input
+            value={value.customTone ?? ""}
+            onChange={(event) => onChange({ ...value, customTone: event.target.value })}
+            placeholder="Describe the tone, e.g. dry and sarcastic but polite"
+            className={`${inputClass} mt-2`}
+          />
+        ) : null}
       </Field>
       <Field label="Sound like age">
         <PillGroup

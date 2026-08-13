@@ -2,7 +2,8 @@ export type Gender = 'male' | 'female' | 'non-binary' | 'prefer-not-to-say';
 
 export type ToneType =
   | 'gen-alpha' | 'gen-z' | 'casual' | 'friendly'
-  | 'flirty' | 'neutral' | 'professional' | 'formal';
+  | 'flirty' | 'neutral' | 'professional' | 'formal'
+  | 'custom';
 
 export type AgeStyle =
   | '13-17' | '18-21' | '22-25' | '26-30'
@@ -16,13 +17,16 @@ export type RelationshipType =
   | 'casual-friend' | 'acquaintance' | 'family'
   | 'colleague' | 'manager' | 'client'
   | 'teacher' | 'student' | 'service'
-  | 'older-person' | 'younger-person' | 'unknown';
+  | 'older-person' | 'younger-person' | 'unknown'
+  | 'custom';
 
 export interface ToneSettings {
   tone: ToneType;
   ageStyle: AgeStyle;
   /** Used when ageStyle === 'custom'. Whole years only. */
   customAge: number | null;
+  /** Free-text tone, used when tone === 'custom'. */
+  customTone: string | null;
   slangLevel: SlangLevel;
   internetLanguage: boolean;
 }
@@ -54,6 +58,8 @@ export interface RecipientProfile {
   age: number | null;
   gender: Gender | null;
   relationship: RelationshipType;
+  /** Free-text relationship, used when relationship === 'custom'. */
+  customRelationship: string | null;
   sourceLanguage: string;     // language code — what the user will write in
   targetLanguage: string;     // language code — what to translate into
   dialect: string | null;
@@ -88,6 +94,8 @@ export interface Conversation {
   recipient: RecipientProfile;
   toneOverrides: Partial<ToneSettings> | null;
   pinned: boolean;
+  /** Archived chats are hidden from the main list. */
+  archived: boolean;
   /** Per-chat look, falls back to the global appearance when null. */
   appearance: Partial<Appearance> | null;
 }

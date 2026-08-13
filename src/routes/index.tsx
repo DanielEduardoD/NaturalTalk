@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { BookOpen, Pin, PinOff, Plus, Settings, Trash2, X } from "lucide-react";
+import { Archive, ArchiveRestore, BookOpen, ChevronDown, ChevronRight, Pin, PinOff, Plus, Settings, Trash2, X } from "lucide-react";
 import { useConversationStore } from "@/stores/conversationStore";
 import { useSpeakerStore } from "@/stores/speakerStore";
 import { LANGUAGE_CONFIGS } from "@/config/languageConfig";
 import { languageLabel } from "@/components/common/LanguagePicker";
 import { RecipientProfileForm, emptyRecipient } from "@/components/profile/RecipientProfileForm";
 import { ToneControls } from "@/components/common/ToneControls";
-import type { RecipientProfile } from "@/types";
+import type { Conversation, Message, RecipientProfile } from "@/types";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -41,6 +41,7 @@ const RELATIONSHIP_LABELS: Record<string, string> = {
   "older-person": "Older person",
   "younger-person": "Younger person",
   unknown: "Not sure",
+  custom: "Custom",
 };
 
 function relativeTime(date: Date) {
@@ -67,9 +68,11 @@ function Dashboard() {
   const createConversation = useConversationStore((state) => state.createConversation);
   const deleteConversation = useConversationStore((state) => state.deleteConversation);
   const togglePinned = useConversationStore((state) => state.togglePinned);
+  const toggleArchived = useConversationStore((state) => state.toggleArchived);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
 
   useEffect(() => {
     setHydrated(true);
@@ -92,6 +95,9 @@ function Dashboard() {
     if (!hasCompletedOnboarding) void navigate({ to: "/onboarding" });
   }, [hydrated, hasSeenLanding, hasCompletedOnboarding, navigate]);
 
+
+  const active = conversations.filter((c) => !c.archived);
+  const archived = conversations.filter((c) => c.archived);
 
   if (!hydrated) return <div className="min-h-screen bg-background" />;
 
@@ -119,12 +125,14 @@ function Dashboard() {
         </div>
       </header>
 
-      {conversations.length === 0 ? (
+      {active.length === 0 ? (
         <div className="mt-24 flex flex-col items-center text-center">
           <div className="flex size-20 items-center justify-center rounded-3xl bg-surface text-3xl">
             💬
           </div>
-          <h2 className="mt-5 font-display text-lg font-semibold">Start your first conversation</h2>
+          <h2 className="mt-5 font-display text-lg font-semibold">
+            {archived.length > 0 ? "No active conversations" : "Start your first conversation"}
+          </h2>
           <p className="mt-2 max-w-xs text-sm text-muted-foreground">
             Add someone you talk to and NaturalTalk will match their language, dialect and social
             context.
@@ -139,97 +147,59 @@ function Dashboard() {
         </div>
       ) : (
         <div className="mt-6 space-y-3">
-          {conversations.map((conversation) => {
-            const lang = languageLabel(conversation.recipient.targetLanguage);
-            const isRTL = LANGUAGE_CONFIGS[conversation.recipient.targetLanguage]?.isRTL ?? false;
-            const list = messages[conversation.id] ?? [];
-            const last = [...list].reverse().find((m) => m.type === "outgoing");
-            return (
-              <div
-                key={conversation.id}
-                className="group relative overflow-hidden rounded-2xl bg-surface"
-              >
-                <button
-                  type="button"
-                  onClick={() =>
-                    void navigate({
-                      to: "/conversation/$id",
-                      params: { id: conversation.id },
-                    })
-                  }
-                  className="block w-full p-4 text-left"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="font-display text-base font-semibold">
-                        {conversation.pinned ? (
-                          <Pin className="mr-1 inline size-3.5 text-primary" />
-                        ) : null}
-                        {conversation.recipient.name || "Unnamed"}
-                      </p>
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                        {lang.flag} {lang.name}
-                        {conversation.recipient.dialect ? ` · ${conversation.recipient.dialect}` : ""}
-                      </p>
-                    </div>
-                    <span className="shrink-0 pr-14 text-xs text-muted-foreground">
-                      {relativeTime(conversation.updatedAt)}
-                    </span>
-                  </div>
-                  <span className="mt-2 inline-block rounded-full bg-field px-2.5 py-1 text-[11px] text-muted-foreground">
-                    {RELATIONSHIP_LABELS[conversation.recipient.relationship]}
-                  </span>
-                  {last ? (
-                    <p
-                      dir={isRTL ? "rtl" : "ltr"}
-                      className="native-text mt-2 truncate text-sm text-muted-foreground"
-                    >
-                      {last.translation}
-                    </p>
-                  ) : null}
-                </button>
-                <div className="absolute top-3 right-3 flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => void togglePinned(conversation.id)}
-                    className={
-                      conversation.pinned
-                        ? "rounded-full p-1.5 text-primary"
-                        : "rounded-full p-1.5 text-muted-foreground hover:text-foreground"
-                    }
-                    aria-label={conversation.pinned ? "Unpin conversation" : "Pin conversation"}
-                  >
-                    {conversation.pinned ? (
-                      <PinOff className="size-4" />
-                    ) : (
-                      <Pin className="size-4" />
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (
-                        confirm(
-                          `Delete the conversation with ${conversation.recipient.name || "this person"}? This cannot be undone.`,
-                        )
-                      ) {
-                        void deleteConversation(conversation.id);
-                      }
-                    }}
-                    className="rounded-full p-1.5 text-muted-foreground hover:text-destructive"
-                    aria-label="Delete conversation"
-                  >
-                    <Trash2 className="size-4" />
-                  </button>
-                </div>
-              </div>
-
-            );
-          })}
+          {active.map((conversation) => (
+            <ConversationCard
+              key={conversation.id}
+              conversation={conversation}
+              messages={messages[conversation.id] ?? []}
+              onOpen={() =>
+                void navigate({ to: "/conversation/$id", params: { id: conversation.id } })
+              }
+              onTogglePin={() => void togglePinned(conversation.id)}
+              onToggleArchive={() => void toggleArchived(conversation.id)}
+              onDelete={() => void deleteConversation(conversation.id)}
+            />
+          ))}
         </div>
       )}
 
-      {conversations.length > 0 ? (
+      {archived.length > 0 ? (
+        <section className="mt-8">
+          <button
+            type="button"
+            onClick={() => setShowArchived((v) => !v)}
+            className="flex w-full items-center gap-2 rounded-xl bg-surface px-4 py-3 text-left text-sm text-muted-foreground"
+          >
+            {showArchived ? (
+              <ChevronDown className="size-4" />
+            ) : (
+              <ChevronRight className="size-4" />
+            )}
+            <Archive className="size-4" />
+            Archived ({archived.length})
+          </button>
+          {showArchived ? (
+            <div className="mt-3 space-y-3 opacity-75">
+              {archived.map((conversation) => (
+                <ConversationCard
+                  key={conversation.id}
+                  conversation={conversation}
+                  messages={messages[conversation.id] ?? []}
+                  archivedView
+                  onOpen={() =>
+                    void navigate({ to: "/conversation/$id", params: { id: conversation.id } })
+                  }
+                  onTogglePin={() => void togglePinned(conversation.id)}
+                  onToggleArchive={() => void toggleArchived(conversation.id)}
+                  onDelete={() => void deleteConversation(conversation.id)}
+                />
+              ))}
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+
+      {active.length > 0 ? (
         <button
           type="button"
           onClick={() => setModalOpen(true)}
@@ -252,6 +222,107 @@ function Dashboard() {
         />
       ) : null}
     </main>
+  );
+}
+
+function ConversationCard({
+  conversation,
+  messages,
+  archivedView = false,
+  onOpen,
+  onTogglePin,
+  onToggleArchive,
+  onDelete,
+}: {
+  conversation: Conversation;
+  messages: Message[];
+  archivedView?: boolean;
+  onOpen: () => void;
+  onTogglePin: () => void;
+  onToggleArchive: () => void;
+  onDelete: () => void;
+}) {
+  const lang = languageLabel(conversation.recipient.targetLanguage);
+  const isRTL = LANGUAGE_CONFIGS[conversation.recipient.targetLanguage]?.isRTL ?? false;
+  const last = [...messages].reverse().find((m) => m.type === "outgoing");
+
+  return (
+    <div className="group relative overflow-hidden rounded-2xl bg-surface">
+      <button type="button" onClick={onOpen} className="block w-full p-4 text-left">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="font-display text-base font-semibold">
+              {conversation.pinned ? <Pin className="mr-1 inline size-3.5 text-primary" /> : null}
+              {conversation.recipient.name || "Unnamed"}
+            </p>
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+              {lang.flag} {lang.name}
+              {conversation.recipient.dialect ? ` · ${conversation.recipient.dialect}` : ""}
+            </p>
+          </div>
+          <span className="shrink-0 pr-20 text-xs text-muted-foreground">
+            {relativeTime(conversation.updatedAt)}
+          </span>
+        </div>
+        <span className="mt-2 inline-block rounded-full bg-field px-2.5 py-1 text-[11px] text-muted-foreground">
+          {conversation.recipient.relationship === "custom"
+            ? conversation.recipient.customRelationship || "Custom"
+            : RELATIONSHIP_LABELS[conversation.recipient.relationship]}
+        </span>
+        {last ? (
+          <p
+            dir={isRTL ? "rtl" : "ltr"}
+            className="native-text mt-2 truncate text-sm text-muted-foreground"
+          >
+            {last.translation}
+          </p>
+        ) : null}
+      </button>
+      <div className="absolute top-3 right-3 flex items-center gap-1">
+        {archivedView ? null : (
+          <button
+            type="button"
+            onClick={onTogglePin}
+            className={
+              conversation.pinned
+                ? "rounded-full p-1.5 text-primary"
+                : "rounded-full p-1.5 text-muted-foreground hover:text-foreground"
+            }
+            aria-label={conversation.pinned ? "Unpin conversation" : "Pin conversation"}
+          >
+            {conversation.pinned ? <PinOff className="size-4" /> : <Pin className="size-4" />}
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={onToggleArchive}
+          className="rounded-full p-1.5 text-muted-foreground hover:text-foreground"
+          aria-label={archivedView ? "Unarchive conversation" : "Archive conversation"}
+        >
+          {archivedView ? (
+            <ArchiveRestore className="size-4" />
+          ) : (
+            <Archive className="size-4" />
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            if (
+              confirm(
+                `Delete the conversation with ${conversation.recipient.name || "this person"}? This cannot be undone.`,
+              )
+            ) {
+              onDelete();
+            }
+          }}
+          className="rounded-full p-1.5 text-muted-foreground hover:text-destructive"
+          aria-label="Delete conversation"
+        >
+          <Trash2 className="size-4" />
+        </button>
+      </div>
+    </div>
   );
 }
 

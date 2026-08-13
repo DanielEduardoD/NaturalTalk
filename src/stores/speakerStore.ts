@@ -16,6 +16,7 @@ export const DEFAULT_SPEAKER: SpeakerProfile = {
     tone: "casual",
     ageStyle: "none",
     customAge: null,
+    customTone: null,
     slangLevel: "medium",
     internetLanguage: true,
   },
