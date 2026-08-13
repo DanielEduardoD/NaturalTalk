@@ -1,5 +1,5 @@
 import type { TranslationOption, TranslationResponse } from "../types";
-import { translateWithLovableAi } from "../lib/translate.functions";
+import { translateWithHostedAi } from "../lib/translate.functions";
 
 export class TranslationError extends Error {
   kind: "network" | "auth" | "parse" | "api";
@@ -118,7 +118,7 @@ async function callAnthropic(
 }
 
 export async function requestTranslation(args: {
-  backend: "lovable" | "own";
+  backend: "hosted" | "own";
   apiKey: string;
   systemPrompt: string;
   history: HistoryMessage[];
@@ -137,9 +137,9 @@ export async function requestTranslation(args: {
     return extractJson(raw);
   }
 
-  let result: Awaited<ReturnType<typeof translateWithLovableAi>>;
+  let result: Awaited<ReturnType<typeof translateWithHostedAi>>;
   try {
-    result = await translateWithLovableAi({
+    result = await translateWithHostedAi({
       data: {
         systemPrompt: args.systemPrompt,
         history: args.history,

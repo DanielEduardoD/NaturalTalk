@@ -21,7 +21,7 @@ export const Route = createFileRoute("/settings")({
       {
         name: "description",
         content:
-          "Manage your profile, default style, appearance, AI backend and encrypted backups in NaturalTalk.",
+          "Manage your profile, default style, appearance, translation engine and encrypted backups in NaturalTalk.",
       },
       { property: "og:title", content: "Settings — NaturalTalk" },
       { property: "og:description", content: "Your profile, style defaults and privacy controls." },
@@ -207,10 +207,10 @@ function SettingsPage() {
         />
       </Section>
 
-      <Section title="AI backend">
+      <Section title="Translation engine">
         <PillGroup
           options={[
-            { value: "lovable", label: "Built-in AI" },
+            { value: "hosted", label: "Built-in engine" },
             { value: "own", label: "My own API key" },
           ]}
           value={current.aiBackend}
@@ -270,7 +270,7 @@ function SettingsPage() {
           </>
         ) : (
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Translations run on NaturalTalk&apos;s built-in AI. No key required.
+            Translations run on NaturalTalk&apos;s built-in engine. No key required.
           </p>
         )}
       </Section>
@@ -344,7 +344,7 @@ function SettingsPage() {
           Delete vocabulary list
         </button>
         <p className="text-xs leading-relaxed text-muted-foreground">
-          Everything lives in this browser. Your messages are sent only to the AI provider you
+          Everything lives in this browser. Your messages are sent only to the translation engine you
           configure, and NaturalTalk never stores your conversations or translations.
         </p>
       </Section>

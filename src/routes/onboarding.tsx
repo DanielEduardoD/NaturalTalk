@@ -137,13 +137,13 @@ function Onboarding() {
         <div className="mt-3 space-y-6">
           <h1 className="font-display text-2xl font-bold">You&apos;re all set</h1>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            NaturalTalk translates with built-in AI out of the box — nothing to configure.
+            NaturalTalk translates out of the box with its built-in engine — nothing to configure.
           </p>
           <section className="rounded-2xl border border-border p-4">
             <h2 className="font-display text-sm font-semibold">Privacy &amp; storage</h2>
             <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
               Your profile, conversations and saved words are stored only in this browser — we never
-              upload them. Message text is sent to the AI provider solely to generate a translation
+              upload them. Message text is sent to the translation engine solely to generate a translation
               and is not retained. Clearing browser data deletes your history, so export a backup
               from Settings if it matters to you.
             </p>
