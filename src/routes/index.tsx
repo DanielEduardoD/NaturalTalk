@@ -24,10 +24,8 @@ export const Route = createFileRoute("/")({
         content: "Culturally intelligent rewrites, not literal translations.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://envision-builder-lab.lovable.app/" },
-    ],
-    links: [{ rel: "canonical", href: "https://envision-builder-lab.lovable.app/" }],
-  }),
+      { property: "og:url", content: "https://naturaltalk.01100100.xyz/" },
+      links: [{ rel: "canonical", href: "https://naturaltalk.01100100.xyz/" }],  }),
 
   component: Dashboard,
 });
