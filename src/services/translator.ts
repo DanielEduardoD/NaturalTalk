@@ -118,7 +118,7 @@ async function callAnthropic(
 }
 
 export async function requestTranslation(args: {
-    backend: "lovable" | "own";
+    backend: "builtin" | "own";
     apiKey: string;
     systemPrompt: string;
     history: HistoryMessage[];
