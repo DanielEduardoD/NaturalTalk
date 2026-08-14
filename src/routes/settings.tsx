@@ -346,6 +346,11 @@ function SettingsPage() {
           configure, and NaturalTalk never stores your conversations or translations.
         </p>
       </Section>
+
+      <Section title="Feedback">
+      <p className="text-xs leading-relaxed text-muted-foreground">Found a bug or have an idea? We would love to hear from you.</p>
+      <a href="mailto:feedback@01100100.xyz?subject=NaturalTalk%20Feedback" className="block w-full rounded-xl border border-border px-4 py-3 text-center text-sm font-semibold text-primary">Send feedback</a>
+      </Section>
     </main>
   );
 }
