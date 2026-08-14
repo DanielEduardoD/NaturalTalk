@@ -26,7 +26,7 @@ export const translateMessage = createServerFn({ method: "POST" })
 
                try {
                        const result = streamText({
-                                 model: gateway("gemini-2.5-flash-lite"),
+                                 model: gateway("gemini-3.5-flash-lite"),
                                  system: data.systemPrompt,
                                  messages: [...data.history, { role: "user" as const, content: data.userMessage }],
                        });
