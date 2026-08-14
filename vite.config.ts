@@ -7,9 +7,18 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
-  tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
-    server: { entry: "server" },
-  },
+    tanstackStart: {
+          // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
+      // nitro/vite builds from this
+      server: { entry: "server" },
+    },
+    vite: {
+          build: {
+                  rolldownOptions: {
+                            // "cloudflare:workers" is provided by the Workers runtime itself at request time.
+                    // It isn't an npm package, so tell the bundler not to try to resolve/bundle it.
+                    external: ["cloudflare:workers"],
+                  },
+          },
+    },
 });
