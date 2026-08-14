@@ -18,10 +18,8 @@ export const Route = createFileRoute("/landing")({
           "Culturally intelligent rewrites with dialect, age and relationship awareness. Private by design.",
       },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://envision-builder-lab.lovable.app/landing" },
-    ],
-    links: [{ rel: "canonical", href: "https://envision-builder-lab.lovable.app/landing" }],
-  }),
+      { property: "og:url", content: "https://naturaltalk.01100100.xyz/landing" },    ],
+    links: [{ rel: "canonical", href: "https://naturaltalk.01100100.xyz/landing" }],  }),
   component: Landing,
 });
 
