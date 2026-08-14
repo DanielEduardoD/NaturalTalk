@@ -26,10 +26,8 @@ export const Route = createFileRoute("/settings")({
       { property: "og:title", content: "Settings — NaturalTalk" },
       { property: "og:description", content: "Your profile, style defaults and privacy controls." },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://envision-builder-lab.lovable.app/settings" },
-    ],
-    links: [{ rel: "canonical", href: "https://envision-builder-lab.lovable.app/settings" }],
-  }),
+      { property: "og:url", content: "https://naturaltalk.01100100.xyz/settings" },    ],
+    links: [{ rel: "canonical", href: "https://naturaltalk.01100100.xyz/settings" }],  }),
   component: SettingsPage,
 });
 
@@ -210,7 +208,7 @@ function SettingsPage() {
       <Section title="AI backend">
         <PillGroup
           options={[
-            { value: "lovable", label: "Built-in AI" },
+            { value: "builtin", label: "Built-in AI" },
             { value: "own", label: "My own API key" },
           ]}
           value={current.aiBackend}
