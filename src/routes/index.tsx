@@ -25,7 +25,7 @@ export const Route = createFileRoute("/")({
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://naturaltalk.01100100.xyz/" },
-      links: [{ rel: "canonical", href: "https://naturaltalk.01100100.xyz/" }],  }),
+      ],    links: [{ rel: "canonical", href: "https://naturaltalk.01100100.xyz/" }],  }),
 
   component: Dashboard,
 });
