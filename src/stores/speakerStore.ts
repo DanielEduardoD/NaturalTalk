@@ -9,7 +9,7 @@ export const DEFAULT_SPEAKER: SpeakerProfile = {
   nativeLanguage: "",
   apiKey: "",
   apiProvider: "anthropic",
-  aiBackend: "lovable",
+  aiBackend: "builtin",
   optionCount: 3,
   hasSetOptionPreference: false,
   defaultTone: {
