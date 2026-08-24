@@ -106,6 +106,11 @@ export interface BreakdownItem {
   meaning: string;
 }
 
+export interface RubySegment {
+    base: string;
+    reading: string;
+}
+
 export interface VocabFlagged {
   word: string;
   romanization: string;
@@ -121,6 +126,8 @@ export interface TranslationOption {
   literal: string;
   /** Short label such as "Warm", "Direct", "Playful". */
   style_label: string;
+    /** Inline reading aid segments (furigana for Japanese, pinyin ruby for Mandarin). Only set on the first option. */
+    ruby?: RubySegment[];
 }
 
 export interface Message {
@@ -147,6 +154,8 @@ export interface Message {
   targetLanguage?: string;
   feedback?: 'up' | 'down' | null;
   feedbackDetail?: string;
+    /** Inline reading aid segments (furigana for Japanese, pinyin ruby for Mandarin). Concatenated bases equal `translation`. */
+    ruby?: RubySegment[];
 }
 
 export interface VocabWord {
