@@ -7,7 +7,7 @@ interface RubyTextProps {
 
 /** Renders text with inline reading-aid annotations (furigana for Japanese, pinyin for Mandarin) using native <ruby>/<rt>. Falls back to plain text when no ruby data is present. */
 export function RubyText({ text, ruby }: RubyTextProps) {
-    if (!ruby || ruby.length === 0) return <>{text}</>>
+    if (!ruby || ruby.length === 0) return <>{text}</>;
   
     return (
           <>
