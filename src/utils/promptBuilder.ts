@@ -110,7 +110,7 @@ Respond ONLY with valid JSON. No markdown fences, no preamble, no explanation ou
       "translation": "the rewritten message in the target language script",
       "romanization": "pronunciation guide if the target language uses a non-Latin script (romaji, pinyin, Korean romanization, Arabic transliteration...). Empty string if not applicable",
       "literal": "close literal back-translation of THIS option into ${sourceLanguageName}",
-      "style_label": "2-3 word label describing how this version differs, e.g. 'Warm and short', 'Direct', 'Playful'"
+      "style_label": "2-3 word label describing how this version differs, e.g. 'Warm and short', 'Direct', 'Playful'"${wantsRubyReading ? ',\n      "ruby": [ { "base": "a run of characters from translation, in order", "reading": "pronunciation for that run, empty string if not needed" } ]' : ''}
     }
   ],
   "breakdown": [
