@@ -172,6 +172,7 @@ export function buildHistoryMessages(messages: Message[]): { role: 'user' | 'ass
             romanization: msg.romanization || '',
             literal: msg.literal || '',
             style_label: '',
+                        ...(msg.ruby ? { ruby: msg.ruby } : {}),
           },
         ],
         breakdown: msg.breakdown || [],
