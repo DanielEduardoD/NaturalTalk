@@ -20,6 +20,7 @@ import { buildHistoryMessages, buildSystemPrompt, buildUserMessage, MOOD_LABELS 
 import type { Message, MessageMood, ToneSettings, TranslationResponse, VocabFlagged } from "@/types";
 import { cn } from "@/lib/utils";
 import { inputClass, Pill } from "@/components/common/ui-kit";
+import { RubyText } from "@/components/common/RubyText";
 
 export const Route = createFileRoute("/conversation/$id")({
   head: () => ({
@@ -176,6 +177,7 @@ function ConversationView() {
         sourceText: args.sourceText,
         translation: first.translation,
         literal: first.literal,
+        ruby: first.ruby,
         options: result.options,
         selectedOption: 0,
         breakdown: result.breakdown,
@@ -252,6 +254,7 @@ function ConversationView() {
         romanization: message.romanization ?? "",
         literal: message.literal ?? "",
         style_label: "",
+        ruby: message.ruby,
       },
     ];
     setResponse({
@@ -275,6 +278,7 @@ function ConversationView() {
         translation: option.translation,
         literal: option.literal,
         romanization: option.romanization,
+        ruby: option.ruby,
       });
     }
   };
@@ -388,7 +392,7 @@ function ConversationView() {
                   )}
                 >
                   <p dir={isRTL ? "rtl" : "ltr"} className="native-text text-base leading-relaxed">
-                    {message.translation}
+                                  <RubyText text={message.translation} ruby={message.ruby} />
                   </p>
                   {message.romanization ? (
                     <p className="mt-1 text-xs text-muted-foreground">{message.romanization}</p>
