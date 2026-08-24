@@ -3,6 +3,7 @@ import { Check, ChevronDown, Copy, RefreshCw, Sparkles, ThumbsDown, ThumbsUp } f
 import { LANGUAGE_CONFIGS } from "@/config/languageConfig";
 import type { TranslationResponse, VocabFlagged } from "@/types";
 import { cn } from "@/lib/utils";
+import { RubyText } from "@/components/common/RubyText";
 
 const FEEDBACK_CHIPS = [
   "Wrong pronouns",
@@ -125,7 +126,7 @@ export function TranslationOutputCard({
                     dir={isRTL ? "rtl" : "ltr"}
                     className={cn("native-text mt-1 block text-base leading-relaxed", isRTL && "text-right")}
                   >
-                    {option.translation}
+                                    <RubyText text={option.translation} ruby={option.ruby} />
                   </span>
                   {option.literal ? (
                     <span className="mt-1 block text-xs text-muted-foreground">
@@ -140,7 +141,7 @@ export function TranslationOutputCard({
               dir={isRTL ? "rtl" : "ltr"}
               className={cn("native-text text-xl leading-relaxed", isRTL && "text-right")}
             >
-              {active.translation}
+                          <RubyText text={active.translation} ruby={active.ruby} />
             </p>
           )}
 
