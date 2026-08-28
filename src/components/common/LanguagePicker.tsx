@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Check, ChevronDown, Search, X } from "lucide-react";
 import { ALL_LANGUAGES, LANGUAGE_CONFIGS, TIER2_LANGUAGES } from "@/config/languageConfig";
 import { inputClass } from "./ui-kit";
+import { useTranslation } from "@/i18n/useTranslation";
 
 export function languageLabel(code: string) {
   const known = ALL_LANGUAGES.find((l) => l.code === code);
@@ -21,15 +22,17 @@ interface LanguagePickerProps {
 export function LanguagePicker({
   value,
   onChange,
-  placeholder = "Choose a language",
+  placeholder,
   excludeCode,
   label,
 }: LanguagePickerProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [custom, setCustom] = useState("");
 
   const selected = languageLabel(value);
+  const resolvedPlaceholder = placeholder ?? t("languagePicker.choosePlaceholder");
 
   const { tier1, tier2 } = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -62,7 +65,7 @@ export function LanguagePicker({
         className={`${inputClass} flex items-center justify-between text-left`}
       >
         <span className={value ? "text-foreground" : "text-muted-foreground"}>
-          {value ? `${selected.flag}  ${selected.name}` : placeholder}
+          {value ? `${selected.flag}  ${selected.name}` : resolvedPlaceholder}
         </span>
         <ChevronDown className="size-4 text-muted-foreground" />
       </button>
@@ -75,10 +78,10 @@ export function LanguagePicker({
               autoFocus
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search languages"
+              placeholder={t("languagePicker.searchPlaceholder")}
               className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
-            <button type="button" onClick={() => setOpen(false)} aria-label="Close">
+            <button type="button" onClick={() => setOpen(false)} aria-label={t("languagePicker.closeAria")}>
               <X className="size-5 text-muted-foreground" />
             </button>
           </div>
@@ -86,7 +89,7 @@ export function LanguagePicker({
           <div className="flex-1 overflow-y-auto px-4 py-3">
             {tier1.length > 0 ? (
               <p className="px-1 pb-2 text-xs tracking-wide text-muted-foreground uppercase">
-                Full language support
+                {t("languagePicker.fullSupport")}
               </p>
             ) : null}
             {tier1.map((lang) => (
@@ -102,7 +105,7 @@ export function LanguagePicker({
 
             {tier2.length > 0 ? (
               <p className="px-1 pt-4 pb-2 text-xs tracking-wide text-muted-foreground uppercase">
-                General support
+                {t("languagePicker.generalSupport")}
               </p>
             ) : null}
             {tier2.map((lang) => (
@@ -116,12 +119,12 @@ export function LanguagePicker({
             ))}
 
             <div className="mt-5 space-y-2 rounded-xl border border-border bg-surface p-3">
-              <p className="text-xs text-muted-foreground">Other — type any language name</p>
+              <p className="text-xs text-muted-foreground">{t("languagePicker.otherPrompt")}</p>
               <div className="flex gap-2">
                 <input
                   value={custom}
                   onChange={(event) => setCustom(event.target.value)}
-                  placeholder="e.g. Icelandic"
+                  placeholder={t("languagePicker.otherPlaceholder")}
                   className={inputClass}
                 />
                 <button
@@ -130,7 +133,7 @@ export function LanguagePicker({
                   onClick={() => pick(custom.trim(), custom.trim())}
                   className="rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground disabled:opacity-40"
                 >
-                  Use
+                  {t("languagePicker.use")}
                 </button>
               </div>
             </div>
