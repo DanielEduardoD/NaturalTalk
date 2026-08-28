@@ -4,32 +4,38 @@ import { flagChoicesFor, regionExamplesFor } from "@/config/regionConfig";
 import type { Gender, RecipientProfile, RelationshipType } from "@/types";
 import { LanguagePicker, languageLabel } from "@/components/common/LanguagePicker";
 import { Field, Note, Pill, PillGroup, inputClass } from "@/components/common/ui-kit";
+import { useTranslation } from "@/i18n/useTranslation";
+import type { TranslationKey } from "@/i18n/locales/en";
 
-const GENDERS: { value: Gender; label: string }[] = [
-  { value: "female", label: "Female" },
-  { value: "male", label: "Male" },
-  { value: "non-binary", label: "Non-binary" },
-  { value: "prefer-not-to-say", label: "Rather not say" },
-];
+function buildGenders(t: (key: TranslationKey) => string): { value: Gender; label: string }[] {
+  return [
+    { value: "female", label: t("gender.female") },
+    { value: "male", label: t("gender.male") },
+    { value: "non-binary", label: t("gender.nonBinary") },
+    { value: "prefer-not-to-say", label: t("gender.preferNotToSay") },
+  ];
+}
 
-const RELATIONSHIPS: { value: RelationshipType; label: string }[] = [
-  { value: "close-friend", label: "🤝 Close friend" },
-  { value: "casual-friend", label: "🙂 Casual friend" },
-  { value: "acquaintance", label: "👋 Acquaintance" },
-  { value: "family", label: "🏠 Family" },
-  { value: "colleague", label: "💼 Colleague" },
-  { value: "manager", label: "📈 Manager / boss" },
-  { value: "client", label: "🤵 Client / customer" },
-  { value: "teacher", label: "🎓 Teacher / mentor" },
-  { value: "student", label: "📚 Student / mentee" },
-  { value: "service", label: "🛎️ Service / support" },
-  { value: "romantic-partner", label: "💞 Partner" },
-  { value: "crush", label: "✨ Crush" },
-  { value: "older-person", label: "🧓 Older person" },
-  { value: "younger-person", label: "🌱 Younger person" },
-  { value: "unknown", label: "❔ Not sure" },
-  { value: "custom", label: "✏️ Custom…" },
-];
+function buildRelationships(t: (key: TranslationKey) => string): { value: RelationshipType; label: string }[] {
+  return [
+    { value: "close-friend", label: `🤝 ${t("relationship.closeFriend")}` },
+    { value: "casual-friend", label: `🙂 ${t("relationship.casualFriend")}` },
+    { value: "acquaintance", label: `👋 ${t("relationship.acquaintance")}` },
+    { value: "family", label: `🏠 ${t("relationship.family")}` },
+    { value: "colleague", label: `💼 ${t("relationship.colleague")}` },
+    { value: "manager", label: `📈 ${t("relationship.manager")}` },
+    { value: "client", label: `🤵 ${t("relationship.client")}` },
+    { value: "teacher", label: `🎓 ${t("relationship.teacher")}` },
+    { value: "student", label: `📚 ${t("relationship.student")}` },
+    { value: "service", label: `🛎️ ${t("relationship.service")}` },
+    { value: "romantic-partner", label: `💞 ${t("relationship.romanticPartner")}` },
+    { value: "crush", label: `✨ ${t("relationship.crush")}` },
+    { value: "older-person", label: `🧓 ${t("relationship.olderPerson")}` },
+    { value: "younger-person", label: `🌱 ${t("relationship.youngerPerson")}` },
+    { value: "unknown", label: `❔ ${t("relationship.unknown")}` },
+    { value: "custom", label: `✏️ ${t("relationship.custom")}` },
+  ];
+}
 
 export function emptyRecipient(nativeLanguage: string): RecipientProfile {
   return {
@@ -53,10 +59,6 @@ export function emptyRecipient(nativeLanguage: string): RecipientProfile {
 
 const CUSTOM = "__custom__";
 
-const NAME_PLACEHOLDERS = ["e.g. Alex", "e.g. Ms. Tanaka", "e.g. Support team", "e.g. Sam"];
-const NOTES_PLACEHOLDER =
-  "e.g. Team lead on a shared project — keep it warm but professional. / Old classmate, we joke a lot.";
-
 export function RecipientProfileForm({
   value,
   onChange,
@@ -64,6 +66,9 @@ export function RecipientProfileForm({
   value: RecipientProfile;
   onChange: (next: RecipientProfile) => void;
 }) {
+  const { t } = useTranslation();
+  const GENDERS = buildGenders(t);
+  const RELATIONSHIPS = buildRelationships(t);
   const config = LANGUAGE_CONFIGS[value.targetLanguage];
   const set = (updates: Partial<RecipientProfile>) => onChange({ ...value, ...updates });
   const [flagPickerOpen, setFlagPickerOpen] = useState(false);
@@ -91,16 +96,16 @@ export function RecipientProfileForm({
 
   return (
     <div className="space-y-5">
-      <Field label="Their name or label">
+      <Field label={t("profileForm.nameLabel")}>
         <input
           value={value.name}
           onChange={(event) => set({ name: event.target.value })}
-          placeholder={NAME_PLACEHOLDERS[0]}
+          placeholder={t("profileForm.namePlaceholder")}
           className={inputClass}
         />
       </Field>
 
-      <Field label="Their age" hint="Optional — helps with age-based politeness rules.">
+      <Field label={t("profileForm.ageLabel")} hint={t("profileForm.ageHint")}>
         <input
           type="text"
           inputMode="numeric"
@@ -110,16 +115,16 @@ export function RecipientProfileForm({
             const digits = event.target.value.replace(/\D/g, "").slice(0, 3);
             set({ age: digits === "" ? null : Number(digits) });
           }}
-          placeholder="Optional"
+          placeholder={t("common.optional")}
           className={inputClass}
         />
       </Field>
 
-      <Field label="Their gender" hint="Optional — only affects grammatical gender.">
+      <Field label={t("profileForm.genderLabel")} hint={t("profileForm.genderHint")}>
         <PillGroup options={GENDERS} value={value.gender} onChange={(gender) => set({ gender })} />
       </Field>
 
-      <Field label="Relationship">
+      <Field label={t("profileForm.relationshipLabel")}>
         <PillGroup
           options={RELATIONSHIPS}
           value={value.relationship}
@@ -134,22 +139,22 @@ export function RecipientProfileForm({
           <input
             value={value.customRelationship ?? ""}
             onChange={(event) => set({ customRelationship: event.target.value })}
-            placeholder="Describe the relationship, e.g. band mate, landlord"
+            placeholder={t("profileForm.relationshipCustomPlaceholder")}
             className={`${inputClass} mt-2`}
           />
         ) : null}
       </Field>
 
       <LanguagePicker
-        label="You write in"
+        label={t("profileForm.youWriteIn")}
         value={value.sourceLanguage}
         onChange={(code) => set({ sourceLanguage: code })}
       />
 
       <LanguagePicker
-        label="Translate into"
+        label={t("profileForm.translateInto")}
         value={value.targetLanguage}
-        placeholder="Choose a target language"
+        placeholder={t("profileForm.targetPlaceholder")}
         onChange={(code) =>
           set({
             targetLanguage: code,
@@ -165,11 +170,11 @@ export function RecipientProfileForm({
       />
 
       {sameLanguage ? (
-        <Note tone="highlight">Source and target language are the same.</Note>
+        <Note tone="highlight">{t("profileForm.sameLanguageNote")}</Note>
       ) : null}
 
       {value.targetLanguage ? (
-        <Field label="Flag shown for this language" hint="Pick whichever one you identify with.">
+        <Field label={t("profileForm.flagLabel")} hint={t("profileForm.flagHint")}>
           <button
             type="button"
             onClick={() => setFlagPickerOpen((v) => !v)}
@@ -177,7 +182,7 @@ export function RecipientProfileForm({
           >
             <span className="text-lg">{value.flagOverride ?? defaultFlag}</span>
             <span className="text-xs text-muted-foreground">
-              {flagPickerOpen ? "Close" : "Change"}
+              {flagPickerOpen ? t("profileForm.flagClose") : t("profileForm.flagChange")}
             </span>
           </button>
           {flagPickerOpen ? (
@@ -204,13 +209,13 @@ export function RecipientProfileForm({
 
       <div className="animate-in fade-in space-y-5 duration-200">
         {config && config.dialects.length > 0 ? (
-          <Field label="Dialect / variant">
+          <Field label={t("profileForm.dialectLabel")}>
             <select
               value={value.dialect ?? ""}
               onChange={(event) => set({ dialect: event.target.value || null, region: null })}
               className={inputClass}
             >
-              <option value="">Let the AI decide</option>
+              <option value="">{t("common.letAiDecide")}</option>
               {config.dialects.map((dialect) => (
                 <option key={dialect.code} value={dialect.label}>
                   {dialect.label}
@@ -222,13 +227,13 @@ export function RecipientProfileForm({
 
         {value.targetLanguage ? (
           <Field
-            label="City / region"
-            hint="Speech changes street by street. Naming a city gets you the local way of talking."
+            label={t("profileForm.regionLabel")}
+            hint={t("profileForm.regionHint")}
           >
             <input
               value={value.region ?? ""}
               onChange={(event) => set({ region: event.target.value || null })}
-              placeholder={regionExamples[0] ? `e.g. ${regionExamples[0]}` : "e.g. their home city"}
+              placeholder={regionExamples[0] ? `e.g. ${regionExamples[0]}` : t("profileForm.regionPlaceholder")}
               className={inputClass}
             />
             {regionExamples.length > 0 ? (
@@ -304,22 +309,19 @@ export function RecipientProfileForm({
         ) : null}
 
         {value.targetLanguage && !config ? (
-          <Note>
-            General support — less specific language features available. Use Custom notes to provide
-            any extra context.
-          </Note>
+          <Note>{t("profileForm.generalSupportNote")}</Note>
         ) : null}
       </div>
 
       <Field
-        label="Custom notes"
-        hint="Anything the AI should know: the setting, the history, how formal it should feel."
+        label={t("profileForm.notesLabel")}
+        hint={t("profileForm.notesHint")}
       >
         <textarea
           value={value.customNotes}
           onChange={(event) => set({ customNotes: event.target.value })}
           rows={3}
-          placeholder={NOTES_PLACEHOLDER}
+          placeholder={t("profileForm.notesPlaceholder")}
           className={inputClass}
         />
       </Field>
@@ -338,6 +340,7 @@ function PronounSelect({
   value: string | null;
   onChange: (value: string) => void;
 }) {
+  const { t } = useTranslation();
   const isCustom = value !== null && value !== "" && !options.some((o) => o.value === value);
   const active = options.find((o) => o.value === value);
 
@@ -348,19 +351,19 @@ function PronounSelect({
         onChange={(event) => onChange(event.target.value === CUSTOM ? " " : event.target.value)}
         className={inputClass}
       >
-        <option value="">Let the AI decide</option>
+        <option value="">{t("common.letAiDecide")}</option>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>
         ))}
-        <option value={CUSTOM}>Other — type manually</option>
+        <option value={CUSTOM}>{t("profileForm.pronounOtherManual")}</option>
       </select>
       {isCustom ? (
         <input
           value={value?.trim() ?? ""}
           onChange={(event) => onChange(event.target.value || " ")}
-          placeholder="Type the pronoun"
+          placeholder={t("profileForm.pronounTypePlaceholder")}
           className={`${inputClass} mt-2`}
         />
       ) : null}
