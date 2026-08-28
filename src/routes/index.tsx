@@ -8,6 +8,8 @@ import { languageLabel } from "@/components/common/LanguagePicker";
 import { RecipientProfileForm, emptyRecipient } from "@/components/profile/RecipientProfileForm";
 import { ToneControls } from "@/components/common/ToneControls";
 import type { Conversation, Message, RecipientProfile } from "@/types";
+import { useTranslation } from "@/i18n/useTranslation";
+import type { TranslationKey } from "@/i18n/locales/en";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -30,32 +32,21 @@ export const Route = createFileRoute("/")({
   component: Dashboard,
 });
 
-const RELATIONSHIP_LABELS: Record<string, string> = {
-  "romantic-partner": "Partner",
-  crush: "Crush",
-  "close-friend": "Close friend",
-  "casual-friend": "Casual friend",
-  acquaintance: "Acquaintance",
-  "older-person": "Older person",
-  "younger-person": "Younger person",
-  unknown: "Not sure",
-  custom: "Custom",
-};
-
-function relativeTime(date: Date) {
+function relativeTime(date: Date, t: (key: TranslationKey, vars?: Record<string, string | number>) => string) {
   const diff = Date.now() - new Date(date).getTime();
   const minutes = Math.round(diff / 60000);
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 1) return t("common.justNow");
+  if (minutes < 60) return t("common.minutesAgo", { n: minutes });
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return t("common.hoursAgo", { n: hours });
   const days = Math.round(hours / 24);
-  if (days < 7) return `${days}d ago`;
+  if (days < 7) return t("common.daysAgo", { n: days });
   return new Date(date).toLocaleDateString();
 }
 
 function Dashboard() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const hasCompletedOnboarding = useSpeakerStore((state) => state.hasCompletedOnboarding);
   const hasSeenLanding = useSpeakerStore((state) => state.hasSeenLanding);
   const profile = useSpeakerStore((state) => state.profile);
@@ -107,7 +98,7 @@ function Dashboard() {
           <button
             type="button"
             onClick={() => void navigate({ to: "/vocabulary" })}
-            aria-label="Vocabulary"
+            aria-label={t("dashboard.vocabularyAria")}
             className="rounded-full p-2 text-muted-foreground hover:text-foreground"
           >
             <BookOpen className="size-5" />
@@ -115,7 +106,7 @@ function Dashboard() {
           <button
             type="button"
             onClick={() => void navigate({ to: "/settings" })}
-            aria-label="Settings"
+            aria-label={t("dashboard.settingsAria")}
             className="rounded-full p-2 text-muted-foreground hover:text-foreground"
           >
             <Settings className="size-5" />
@@ -129,18 +120,17 @@ function Dashboard() {
             💬
           </div>
           <h2 className="mt-5 font-display text-lg font-semibold">
-            {archived.length > 0 ? "No active conversations" : "Start your first conversation"}
+            {archived.length > 0 ? t("dashboard.emptyTitleWithArchived") : t("dashboard.emptyTitle")}
           </h2>
           <p className="mt-2 max-w-xs text-sm text-muted-foreground">
-            Add someone you talk to and NaturalTalk will match their language, dialect and social
-            context.
+            {t("dashboard.emptyBody")}
           </p>
           <button
             type="button"
             onClick={() => setModalOpen(true)}
             className="mt-6 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground"
           >
-            + New Conversation
+            {t("dashboard.newConversation")}
           </button>
         </div>
       ) : (
@@ -174,7 +164,7 @@ function Dashboard() {
               <ChevronRight className="size-4" />
             )}
             <Archive className="size-4" />
-            Archived ({archived.length})
+            {t("dashboard.archived", { n: archived.length })}
           </button>
           {showArchived ? (
             <div className="mt-3 space-y-3 opacity-75">
@@ -201,7 +191,7 @@ function Dashboard() {
         <button
           type="button"
           onClick={() => setModalOpen(true)}
-          aria-label="New conversation"
+          aria-label={t("dashboard.newConversationAria")}
           className="fixed right-5 bottom-6 z-30 flex size-14 items-center justify-center rounded-full bg-accent text-accent-foreground shadow-lg"
         >
           <Plus className="size-6" />
@@ -240,6 +230,18 @@ function ConversationCard({
   onToggleArchive: () => void;
   onDelete: () => void;
 }) {
+  const { t } = useTranslation();
+  const RELATIONSHIP_LABELS: Record<string, string> = {
+    "romantic-partner": t("relationship.romanticPartner"),
+    crush: t("relationship.crush"),
+    "close-friend": t("relationship.closeFriend"),
+    "casual-friend": t("relationship.casualFriend"),
+    acquaintance: t("relationship.acquaintance"),
+    "older-person": t("relationship.olderPerson"),
+    "younger-person": t("relationship.youngerPerson"),
+    unknown: t("relationship.unknown"),
+    custom: t("relationship.custom"),
+  };
   const lang = languageLabel(conversation.recipient.targetLanguage);
   const isRTL = LANGUAGE_CONFIGS[conversation.recipient.targetLanguage]?.isRTL ?? false;
   const last = [...messages].reverse().find((m) => m.type === "outgoing");
@@ -251,7 +253,7 @@ function ConversationCard({
           <div className="min-w-0">
             <p className="font-display text-base font-semibold">
               {conversation.pinned ? <Pin className="mr-1 inline size-3.5 text-primary" /> : null}
-              {conversation.recipient.name || "Unnamed"}
+              {conversation.recipient.name || t("dashboard.unnamed")}
             </p>
             <p className="mt-0.5 truncate text-xs text-muted-foreground">
               {lang.flag} {lang.name}
@@ -259,12 +261,12 @@ function ConversationCard({
             </p>
           </div>
           <span className="shrink-0 pr-20 text-xs text-muted-foreground">
-            {relativeTime(conversation.updatedAt)}
+            {relativeTime(conversation.updatedAt, t)}
           </span>
         </div>
         <span className="mt-2 inline-block rounded-full bg-field px-2.5 py-1 text-[11px] text-muted-foreground">
           {conversation.recipient.relationship === "custom"
-            ? conversation.recipient.customRelationship || "Custom"
+            ? conversation.recipient.customRelationship || t("relationship.custom")
             : RELATIONSHIP_LABELS[conversation.recipient.relationship]}
         </span>
         {last ? (
@@ -286,7 +288,7 @@ function ConversationCard({
                 ? "rounded-full p-1.5 text-primary"
                 : "rounded-full p-1.5 text-muted-foreground hover:text-foreground"
             }
-            aria-label={conversation.pinned ? "Unpin conversation" : "Pin conversation"}
+            aria-label={conversation.pinned ? t("dashboard.unpinConversation") : t("dashboard.pinConversation")}
           >
             {conversation.pinned ? <PinOff className="size-4" /> : <Pin className="size-4" />}
           </button>
@@ -295,7 +297,7 @@ function ConversationCard({
           type="button"
           onClick={onToggleArchive}
           className="rounded-full p-1.5 text-muted-foreground hover:text-foreground"
-          aria-label={archivedView ? "Unarchive conversation" : "Archive conversation"}
+          aria-label={archivedView ? t("dashboard.unarchiveConversation") : t("dashboard.archiveConversation")}
         >
           {archivedView ? (
             <ArchiveRestore className="size-4" />
@@ -308,14 +310,16 @@ function ConversationCard({
           onClick={() => {
             if (
               confirm(
-                `Delete the conversation with ${conversation.recipient.name || "this person"}? This cannot be undone.`,
+                t("dashboard.deleteConfirm", {
+                  name: conversation.recipient.name || t("dashboard.deleteConfirmFallbackName"),
+                }),
               )
             ) {
               onDelete();
             }
           }}
           className="rounded-full p-1.5 text-muted-foreground hover:text-destructive"
-          aria-label="Delete conversation"
+          aria-label={t("dashboard.deleteConversation")}
         >
           <Trash2 className="size-4" />
         </button>
@@ -333,6 +337,7 @@ function NewConversationModal({
   onClose: () => void;
   onCreate: (recipient: RecipientProfile) => Promise<void>;
 }) {
+  const { t } = useTranslation();
   const profile = useSpeakerStore((state) => state.profile);
   const [recipient, setRecipient] = useState<RecipientProfile>(emptyRecipient(nativeLanguage));
   const [tone, setTone] = useState(profile?.defaultTone);
@@ -341,8 +346,8 @@ function NewConversationModal({
     <div className="fixed inset-0 z-50 overflow-y-auto bg-background">
       <div className="mx-auto w-full max-w-md px-5 py-6">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-xl font-bold">New conversation</h2>
-          <button type="button" onClick={onClose} aria-label="Close">
+          <h2 className="font-display text-xl font-bold">{t("dashboard.modal.title")}</h2>
+          <button type="button" onClick={onClose} aria-label={t("dashboard.modal.closeAria")}>
             <X className="size-5 text-muted-foreground" />
           </button>
         </div>
@@ -353,7 +358,7 @@ function NewConversationModal({
 
         {tone ? (
           <div className="mt-8">
-            <h3 className="mb-4 font-display text-base font-semibold">Style for this person</h3>
+            <h3 className="mb-4 font-display text-base font-semibold">{t("dashboard.modal.styleForPerson")}</h3>
             <ToneControls value={tone} onChange={setTone} />
           </div>
         ) : null}
@@ -364,7 +369,7 @@ function NewConversationModal({
           onClick={() => void onCreate(recipient)}
           className="mt-8 w-full rounded-xl bg-accent py-3.5 text-sm font-semibold text-accent-foreground disabled:opacity-40"
         >
-          Create Conversation
+          {t("dashboard.modal.createConversation")}
         </button>
       </div>
     </div>
