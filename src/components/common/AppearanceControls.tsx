@@ -6,6 +6,8 @@ import {
 } from "@/stores/appearanceStore";
 import { Field, PillGroup } from "./ui-kit";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/i18n/useTranslation";
+import type { TranslationKey } from "@/i18n/locales/en";
 
 export function bubbleClass(style: BubbleStyle, side: "incoming" | "outgoing") {
   if (style === "square") return "rounded-md";
@@ -27,16 +29,26 @@ export function ChatAppearanceControls({
   onChange: (next: Partial<Appearance>) => void;
   onReset?: () => void;
 }) {
+  const { t } = useTranslation();
+  const bubbleOptions = BUBBLE_STYLES.map((b) => ({
+    value: b.value,
+    label: t(`bubbleStyle.${b.value}` as TranslationKey),
+  }));
+  const wallpaperOptions = WALLPAPERS.map((w) => ({
+    value: w.value,
+    label: t(`wallpaper.${w.value}` as TranslationKey),
+  }));
+
   return (
     <div className="space-y-5">
-      <Field label="Accent colour">
+      <Field label={t("appearance.accentLabel")}>
         <div className="flex flex-wrap gap-2">
           {ACCENT_THEMES.map((theme) => (
             <button
               key={theme.value}
               type="button"
               onClick={() => onChange({ accent: theme.value })}
-              aria-label={theme.label}
+              aria-label={t(`accent.${theme.value}` as TranslationKey)}
               className={cn(
                 "size-9 rounded-full border-2",
                 value.accent === theme.value ? "border-foreground" : "border-transparent",
@@ -47,17 +59,17 @@ export function ChatAppearanceControls({
         </div>
       </Field>
 
-      <Field label="Bubble shape">
+      <Field label={t("appearance.bubbleLabel")}>
         <PillGroup
-          options={BUBBLE_STYLES}
+          options={bubbleOptions}
           value={value.bubbleStyle}
           onChange={(bubbleStyle) => onChange({ bubbleStyle })}
         />
       </Field>
 
-      <Field label="Wallpaper">
+      <Field label={t("appearance.wallpaperLabel")}>
         <PillGroup
-          options={WALLPAPERS}
+          options={wallpaperOptions}
           value={value.wallpaper}
           onChange={(wallpaper) => onChange({ wallpaper })}
         />
@@ -69,7 +81,7 @@ export function ChatAppearanceControls({
           onClick={onReset}
           className="text-xs text-muted-foreground underline"
         >
-          Reset to app defaults
+          {t("appearance.reset")}
         </button>
       ) : null}
     </div>
