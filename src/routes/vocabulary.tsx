@@ -7,6 +7,8 @@ import { languageLabel } from "@/components/common/LanguagePicker";
 import { inputClass } from "@/components/common/ui-kit";
 import { cn } from "@/lib/utils";
 import type { VocabWord } from "@/types";
+import { useTranslation } from "@/i18n/useTranslation";
+import type { TranslationKey } from "@/i18n/locales/en";
 
 export const Route = createFileRoute("/vocabulary")({
   head: () => ({
@@ -32,9 +34,15 @@ const STATUS_STYLES: Record<VocabWord["studyStatus"], string> = {
   learning: "bg-primary/10 text-primary/80",
   known: "bg-primary/20 text-primary",
 };
+const STATUS_KEYS: Record<VocabWord["studyStatus"], TranslationKey> = {
+  new: "studyStatus.new",
+  learning: "studyStatus.learning",
+  known: "studyStatus.known",
+};
 
 function VocabularyPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const words = useVocabStore((state) => state.words);
   const loadWords = useVocabStore((state) => state.loadWords);
   const updateWord = useVocabStore((state) => state.updateWord);
@@ -67,15 +75,15 @@ function VocabularyPage() {
   return (
     <main className="mx-auto min-h-screen w-full max-w-md px-5 pt-6 pb-16">
       <header className="flex items-center gap-3">
-        <button type="button" onClick={() => void navigate({ to: "/" })} aria-label="Back">
+        <button type="button" onClick={() => void navigate({ to: "/" })} aria-label={t("vocabulary.backAria")}>
           <ArrowLeft className="size-5 text-muted-foreground" />
         </button>
-        <h1 className="font-display text-2xl font-bold">Vocabulary</h1>
+        <h1 className="font-display text-2xl font-bold">{t("vocabulary.title")}</h1>
       </header>
 
       <div className="mt-5 flex flex-wrap gap-2">
         <FilterChip active={filter === "all"} onClick={() => setFilter("all")}>
-          All
+          {t("vocabulary.filterAll")}
         </FilterChip>
         {languages.map((code) => {
           const lang = languageLabel(code);
@@ -92,14 +100,14 @@ function VocabularyPage() {
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search saved words"
+          placeholder={t("vocabulary.searchPlaceholder")}
           className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
         />
       </div>
 
       {visible.length === 0 ? (
         <p className="mt-16 text-center text-sm text-muted-foreground">
-          No saved words yet. Tap “Save” on vocabulary suggestions in a translation.
+          {t("vocabulary.empty")}
         </p>
       ) : null}
 
@@ -136,12 +144,12 @@ function VocabularyPage() {
                       STATUS_STYLES[word.studyStatus],
                     )}
                   >
-                    {word.studyStatus}
+                    {t(STATUS_KEYS[word.studyStatus])}
                   </button>
                   <button
                     type="button"
                     onClick={() => void deleteWord(word.id)}
-                    aria-label="Delete word"
+                    aria-label={t("vocabulary.deleteAria")}
                     className="text-muted-foreground hover:text-destructive"
                   >
                     <Trash2 className="size-4" />
@@ -157,12 +165,12 @@ function VocabularyPage() {
                     </p>
                   ) : null}
                   <p className="text-[11px] text-muted-foreground">
-                    Saved {new Date(word.dateAdded).toLocaleDateString()}
+                    {t("vocabulary.savedOn", { date: new Date(word.dateAdded).toLocaleDateString() })}
                   </p>
                   <input
                     defaultValue={word.userNote}
                     onBlur={(event) => void updateWord(word.id, { userNote: event.target.value })}
-                    placeholder="Add a personal note..."
+                    placeholder={t("vocabulary.notePlaceholder")}
                     className={inputClass}
                   />
                 </div>
