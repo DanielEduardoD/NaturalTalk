@@ -4,16 +4,7 @@ import { LANGUAGE_CONFIGS } from "@/config/languageConfig";
 import type { TranslationResponse, VocabFlagged } from "@/types";
 import { cn } from "@/lib/utils";
 import { RubyText } from "@/components/common/RubyText";
-
-const FEEDBACK_CHIPS = [
-  "Wrong pronouns",
-  "Wrong dialect",
-  "Sounds unnatural",
-  "Wrong tone",
-  "Too formal",
-  "Too casual",
-  "Other",
-];
+import { useTranslation } from "@/i18n/useTranslation";
 
 interface Props {
   status: "loading" | "error" | "loaded";
@@ -46,6 +37,16 @@ export function TranslationOutputCard({
   onRetry,
   onRegenerate,
 }: Props) {
+  const { t } = useTranslation();
+  const FEEDBACK_CHIPS = [
+    t("feedbackChip.wrongPronouns"),
+    t("feedbackChip.wrongDialect"),
+    t("feedbackChip.soundsUnnatural"),
+    t("feedbackChip.wrongTone"),
+    t("feedbackChip.tooFormal"),
+    t("feedbackChip.tooCasual"),
+    t("feedbackChip.other"),
+  ];
   const config = LANGUAGE_CONFIGS[targetLanguage];
   const isRTL = config?.isRTL ?? false;
   const [copied, setCopied] = useState(false);
@@ -83,14 +84,14 @@ export function TranslationOutputCard({
       {status === "error" ? (
         <div className="space-y-3">
           <p className="text-sm text-destructive">
-            {errorMessage ?? "Unexpected response. Please try again."}
+            {errorMessage ?? t("translationCard.unexpectedError")}
           </p>
           <button
             type="button"
             onClick={onRetry}
             className="rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground"
           >
-            Retry
+            {t("translationCard.retry")}
           </button>
         </div>
       ) : null}
@@ -100,7 +101,7 @@ export function TranslationOutputCard({
           {options.length > 1 ? (
             <div className="space-y-2">
               <p className="text-xs tracking-wide text-muted-foreground uppercase">
-                Pick the version you like
+                {t("translationCard.pickVersion")}
               </p>
               {options.map((option, index) => (
                 <button
@@ -116,7 +117,7 @@ export function TranslationOutputCard({
                 >
                   <span className="flex items-center justify-between gap-2">
                     <span className="text-[11px] text-muted-foreground">
-                      {option.style_label || `Option ${index + 1}`}
+                      {option.style_label || t("translationCard.optionN", { n: index + 1 })}
                     </span>
                     {index === selectedIndex ? (
                       <Check className="size-3.5 shrink-0 text-primary" />
@@ -152,7 +153,7 @@ export function TranslationOutputCard({
           {active.literal ? (
             <div className="rounded-xl border border-border bg-field px-3 py-2.5">
               <p className="text-[11px] tracking-wide text-muted-foreground uppercase">
-                Literal meaning in {sourceLanguageName}
+                {t("translationCard.literalMeaningIn", { language: sourceLanguageName })}
               </p>
               <p className="mt-1 text-sm">{active.literal}</p>
             </div>
@@ -165,7 +166,7 @@ export function TranslationOutputCard({
               className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-accent py-3 text-sm font-semibold text-accent-foreground"
             >
               {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-              {copied ? "Copied!" : "Copy"}
+              {copied ? t("translationCard.copied") : t("translationCard.copy")}
             </button>
             {onRegenerate ? (
               <button
@@ -173,7 +174,7 @@ export function TranslationOutputCard({
                 onClick={onRegenerate}
                 className="flex items-center justify-center gap-2 rounded-xl border border-border px-4 text-sm"
               >
-                <RefreshCw className="size-4" /> Regenerate
+                <RefreshCw className="size-4" /> {t("translationCard.regenerate")}
               </button>
             ) : null}
           </div>
@@ -187,7 +188,7 @@ export function TranslationOutputCard({
                 onClick={() => setShowBreakdown((v) => !v)}
                 className="flex w-full items-center justify-between text-sm text-muted-foreground"
               >
-                Phrase breakdown
+                {t("translationCard.phraseBreakdown")}
                 <ChevronDown
                   className={cn("size-4 transition-transform", showBreakdown && "rotate-180")}
                 />
@@ -218,8 +219,9 @@ export function TranslationOutputCard({
                 className="inline-flex items-center gap-2 rounded-full bg-primary/15 px-3 py-1.5 text-xs text-primary"
               >
                 <Sparkles className="size-3.5" />
-                {response.vocabulary.length} new word
-                {response.vocabulary.length === 1 ? "" : "s"}
+                {t(response.vocabulary.length === 1 ? "translationCard.newWord" : "translationCard.newWords", {
+                  n: response.vocabulary.length,
+                })}
               </button>
               {showVocab ? (
                 <div className="mt-3 space-y-2">
@@ -243,7 +245,7 @@ export function TranslationOutputCard({
                           onClick={() => onSaveWord(word)}
                           className="shrink-0 rounded-lg border border-primary/50 px-2.5 py-1 text-xs text-primary disabled:opacity-50"
                         >
-                          {saved ? "Saved ✓" : "Save"}
+                          {saved ? t("translationCard.saved") : t("translationCard.save")}
                         </button>
                       </div>
                     );
@@ -253,7 +255,7 @@ export function TranslationOutputCard({
                     onClick={() => response.vocabulary.forEach(onSaveWord)}
                     className="text-xs text-primary underline"
                   >
-                    Save all
+                    {t("translationCard.saveAll")}
                   </button>
                 </div>
               ) : null}
@@ -273,7 +275,7 @@ export function TranslationOutputCard({
                 feedback === "up" && "border-primary text-primary",
               )}
             >
-              <ThumbsUp className="size-3.5" /> Looks good
+              <ThumbsUp className="size-3.5" /> {t("translationCard.looksGood")}
             </button>
             <button
               type="button"
@@ -286,7 +288,7 @@ export function TranslationOutputCard({
                 feedback === "down" && "border-destructive text-destructive",
               )}
             >
-              <ThumbsDown className="size-3.5" /> Something&apos;s off
+              <ThumbsDown className="size-3.5" /> {t("translationCard.somethingsOff")}
             </button>
           </div>
 
