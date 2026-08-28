@@ -8,11 +8,13 @@ import { useAppearanceStore } from "@/stores/appearanceStore";
 import { LanguagePicker } from "@/components/common/LanguagePicker";
 import { ToneControls } from "@/components/common/ToneControls";
 import { ChatAppearanceControls } from "@/components/common/AppearanceControls";
+import { UILanguagePicker } from "@/components/common/UILanguagePicker";
 import { Field, PillGroup, inputClass } from "@/components/common/ui-kit";
 import { testAnthropicKey } from "@/services/translator";
 import { decryptJson, encryptJson, isEncryptedPayload } from "@/lib/crypto";
 import db from "@/services/database";
 import type { Gender, SpeakerProfile } from "@/types";
+import { useTranslation } from "@/i18n/useTranslation";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -26,19 +28,19 @@ export const Route = createFileRoute("/settings")({
       { property: "og:title", content: "Settings — NaturalTalk" },
       { property: "og:description", content: "Your profile, style defaults and privacy controls." },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://naturaltalk.01100100.xyz/settings" },    ],
-    links: [{ rel: "canonical", href: "https://naturaltalk.01100100.xyz/settings" }],  }),
+      { property: "og:url", content: "https://naturaltalk.01100100.xyz/settings" }, ],
+    links: [{ rel: "canonical", href: "https://naturaltalk.01100100.xyz/settings" }], }),
   component: SettingsPage,
 });
 
-const GENDERS: { value: Gender; label: string }[] = [
-  { value: "female", label: "Female" },
-  { value: "male", label: "Male" },
-  { value: "non-binary", label: "Non-binary" },
-];
-
 function SettingsPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const GENDERS: { value: Gender; label: string }[] = [
+    { value: "female", label: t("gender.female") },
+    { value: "male", label: t("gender.male") },
+    { value: "non-binary", label: t("gender.nonBinary") },
+  ];
   const profile = useSpeakerStore((state) => state.profile);
   const updateProfile = useSpeakerStore((state) => state.updateProfile);
   const deleteAllConversations = useConversationStore((state) => state.deleteAllConversations);
@@ -89,15 +91,15 @@ function SettingsPage() {
     if (exportPassword.trim().length >= 6) {
       const encrypted = await encryptJson(payload, exportPassword.trim());
       download(JSON.stringify(encrypted, null, 2), "naturaltalk-backup.encrypted.json");
-      setStatus("Encrypted backup downloaded. Keep the password safe — it cannot be recovered.");
+      setStatus(t("settings.backup.encryptedDownloaded"));
       return;
     }
     if (exportPassword.trim().length > 0) {
-      setStatus("Password must be at least 6 characters.");
+      setStatus(t("settings.backup.passwordTooShort"));
       return;
     }
     download(JSON.stringify(payload, null, 2), "naturaltalk-backup.json");
-    setStatus("Plain backup downloaded. Anyone with this file can read your conversations.");
+    setStatus(t("settings.backup.plainDownloaded"));
   };
 
   const importFile = async (file: File) => {
@@ -105,7 +107,7 @@ function SettingsPage() {
     try {
       let parsed: unknown = JSON.parse(await file.text());
       if (isEncryptedPayload(parsed)) {
-        const password = prompt("This backup is encrypted. Enter its password:");
+        const password = prompt(t("settings.backup.encryptedPrompt"));
         if (!password) return;
         parsed = await decryptJson(parsed, password);
       }
@@ -132,31 +134,35 @@ function SettingsPage() {
         await loadWords();
       }
       setStatus(
-        `Imported ${result.conversations} conversations, ${result.messages} messages and ${data.vocabulary?.length ?? 0} saved words.`,
+        t("settings.backup.importedSummary", {
+          conversations: result.conversations,
+          messages: result.messages,
+          words: data.vocabulary?.length ?? 0,
+        }),
       );
     } catch {
-      setStatus("Could not read that file — wrong password or not a NaturalTalk backup.");
+      setStatus(t("settings.backup.importError"));
     }
   };
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-md px-5 pt-6 pb-16">
       <header className="flex items-center gap-3">
-        <button type="button" onClick={() => void navigate({ to: "/" })} aria-label="Back">
+        <button type="button" onClick={() => void navigate({ to: "/" })} aria-label={t("settings.backAria")}>
           <ArrowLeft className="size-5 text-muted-foreground" />
         </button>
-        <h1 className="font-display text-2xl font-bold">Settings</h1>
+        <h1 className="font-display text-2xl font-bold">{t("settings.title")}</h1>
       </header>
 
-      <Section title="My profile">
-        <Field label="Name">
+      <Section title={t("settings.section.myProfile")}>
+        <Field label={t("settings.field.name")}>
           <input
             value={current.name}
             onChange={(event) => updateProfile({ name: event.target.value })}
             className={inputClass}
           />
         </Field>
-        <Field label="Age">
+        <Field label={t("settings.field.age")}>
           <input
             type="number"
             inputMode="numeric"
@@ -165,7 +171,7 @@ function SettingsPage() {
             className={inputClass}
           />
         </Field>
-        <Field label="Gender">
+        <Field label={t("settings.field.gender")}>
           <PillGroup
             options={GENDERS}
             value={current.gender}
@@ -173,18 +179,18 @@ function SettingsPage() {
           />
         </Field>
         <LanguagePicker
-          label="Native language"
+          label={t("settings.field.nativeLanguage")}
           value={current.nativeLanguage}
           onChange={(code) => updateProfile({ nativeLanguage: code })}
         />
       </Section>
 
-      <Section title="Translation options">
-        <Field label="Rewrites per message">
+      <Section title={t("settings.section.translationOptions")}>
+        <Field label={t("settings.field.rewritesPerMessage")}>
           <PillGroup
             options={[
-              { value: "1", label: "Just one" },
-              { value: "3", label: "Up to 3 options" },
+              { value: "1", label: t("settings.rewrites.justOne") },
+              { value: "3", label: t("settings.rewrites.upToThree") },
             ]}
             value={String(current.optionCount)}
             onChange={(value) =>
@@ -194,9 +200,9 @@ function SettingsPage() {
         </Field>
       </Section>
 
-      <Section title="Appearance">
+      <Section title={t("settings.section.appearance")}>
         <p className="text-xs leading-relaxed text-muted-foreground">
-          App-wide defaults. Each conversation can override these from its own settings.
+          {t("settings.appearance.note")}
         </p>
         <ChatAppearanceControls
           value={appearance}
@@ -205,18 +211,18 @@ function SettingsPage() {
         />
       </Section>
 
-      <Section title="AI backend">
+      <Section title={t("settings.section.aiBackend")}>
         <PillGroup
           options={[
-            { value: "builtin", label: "Built-in AI" },
-            { value: "own", label: "My own API key" },
+            { value: "builtin", label: t("settings.aiBackend.builtin") },
+            { value: "own", label: t("settings.aiBackend.own") },
           ]}
           value={current.aiBackend}
           onChange={(aiBackend) => updateProfile({ aiBackend })}
         />
         {current.aiBackend === "own" ? (
           <>
-            <Field label="Anthropic API key">
+            <Field label={t("settings.aiBackend.keyLabel")}>
               <div className="flex gap-2">
                 <input
                   type={showKey ? "text" : "password"}
@@ -225,13 +231,13 @@ function SettingsPage() {
                     updateProfile({ apiKey: event.target.value });
                     setKeyStatus("idle");
                   }}
-                  placeholder="sk-ant-..."
+                  placeholder={t("settings.aiBackend.keyPlaceholder")}
                   className={inputClass}
                 />
                 <button
                   type="button"
                   onClick={() => setShowKey((v) => !v)}
-                  aria-label={showKey ? "Hide key" : "Show key"}
+                  aria-label={showKey ? t("settings.aiBackend.hideKeyAria") : t("settings.aiBackend.showKeyAria")}
                   className="rounded-xl border border-border px-3 text-muted-foreground"
                 >
                   {showKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -247,14 +253,14 @@ function SettingsPage() {
                 }}
                 className="rounded-xl border border-border px-4 py-2 text-sm"
               >
-                Test key
+                {t("settings.aiBackend.testKey")}
               </button>
               {keyStatus === "testing" ? (
-                <span className="text-xs text-muted-foreground">Testing…</span>
+                <span className="text-xs text-muted-foreground">{t("settings.aiBackend.testing")}</span>
               ) : null}
-              {keyStatus === "ok" ? <span className="text-xs text-primary">✓ Connected</span> : null}
+              {keyStatus === "ok" ? <span className="text-xs text-primary">{t("settings.aiBackend.connected")}</span> : null}
               {keyStatus === "bad" ? (
-                <span className="text-xs text-destructive">✗ Invalid key</span>
+                <span className="text-xs text-destructive">{t("settings.aiBackend.invalidKey")}</span>
               ) : null}
             </div>
             <a
@@ -263,30 +269,30 @@ function SettingsPage() {
               rel="noreferrer"
               className="text-xs text-primary underline"
             >
-              Get an Anthropic API key →
+              {t("settings.aiBackend.getKeyLink")}
             </a>
           </>
         ) : (
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Translations run on NaturalTalk&apos;s built-in AI. No key required.
+            {t("settings.aiBackend.builtinNote")}
           </p>
         )}
       </Section>
 
-      <Section title="Default style">
+      <Section title={t("settings.section.defaultStyle")}>
         <ToneControls
           value={current.defaultTone}
           onChange={(defaultTone) => updateProfile({ defaultTone })}
         />
       </Section>
 
-      <Section title="Backup & restore">
-        <Field label="Backup password" hint="Optional — 6+ characters enables encryption">
+      <Section title={t("settings.section.backupRestore")}>
+        <Field label={t("settings.backup.passwordLabel")} hint={t("settings.backup.passwordHint")}>
           <input
             type="password"
             value={exportPassword}
             onChange={(event) => setExportPassword(event.target.value)}
-            placeholder="Leave empty for a plain file"
+            placeholder={t("settings.backup.passwordPlaceholder")}
             className={inputClass}
           />
         </Field>
@@ -295,14 +301,14 @@ function SettingsPage() {
           onClick={() => void exportData()}
           className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground"
         >
-          Export backup
+          {t("settings.backup.export")}
         </button>
         <button
           type="button"
           onClick={() => fileInput.current?.click()}
           className="w-full rounded-xl border border-border px-4 py-3 text-left text-sm"
         >
-          Import backup from file
+          {t("settings.backup.import")}
         </button>
         <input
           ref={fileInput}
@@ -318,38 +324,44 @@ function SettingsPage() {
         {status ? <p className="text-xs leading-relaxed text-primary">{status}</p> : null}
       </Section>
 
-      <Section title="Data & privacy">
+      <Section title={t("settings.section.dataPrivacy")}>
         <button
           type="button"
           onClick={() => {
-            if (confirm("Delete all conversations? This cannot be undone.")) {
+            if (confirm(t("settings.data.deleteAllConversationsConfirm"))) {
               void deleteAllConversations();
             }
           }}
           className="w-full rounded-xl border border-border px-4 py-3 text-left text-sm"
         >
-          Delete all conversations
+          {t("settings.data.deleteAllConversations")}
         </button>
         <button
           type="button"
           onClick={() => {
-            if (confirm("Delete your vocabulary list? This cannot be undone.")) {
+            if (confirm(t("settings.data.deleteVocabularyConfirm"))) {
               void deleteAllWords();
             }
           }}
           className="w-full rounded-xl border border-border px-4 py-3 text-left text-sm"
         >
-          Delete vocabulary list
+          {t("settings.data.deleteVocabulary")}
         </button>
         <p className="text-xs leading-relaxed text-muted-foreground">
-          Everything lives in this browser. Your messages are sent only to the AI provider you
-          configure, and NaturalTalk never stores your conversations or translations.
+          {t("settings.data.privacyNote")}
         </p>
       </Section>
 
-      <Section title="Feedback">
-      <p className="text-xs leading-relaxed text-muted-foreground">Found a bug or have an idea? We would love to hear from you.</p>
-      <a href="mailto:feedback@01100100.xyz?subject=NaturalTalk%20Feedback" className="block w-full rounded-xl border border-border px-4 py-3 text-center text-sm font-semibold text-primary">Send feedback</a>
+      <Section title={t("settings.section.interfaceLanguage")}>
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          {t("settings.interfaceLanguage.note")}
+        </p>
+        <UILanguagePicker />
+      </Section>
+
+      <Section title={t("settings.section.feedback")}>
+        <p className="text-xs leading-relaxed text-muted-foreground">{t("settings.feedback.body")}</p>
+        <a href="mailto:feedback@01100100.xyz?subject=NaturalTalk%20Feedback" className="block w-full rounded-xl border border-border px-4 py-3 text-center text-sm font-semibold text-primary">{t("settings.feedback.sendButton")}</a>
       </Section>
     </main>
   );
