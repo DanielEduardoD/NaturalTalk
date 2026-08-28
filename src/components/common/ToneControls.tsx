@@ -1,37 +1,45 @@
 import type { AgeStyle, SlangLevel, ToneSettings, ToneType } from "@/types";
 import { Field, PillGroup, inputClass } from "./ui-kit";
+import { useTranslation } from "@/i18n/useTranslation";
+import type { TranslationKey } from "@/i18n/locales/en";
 
-const TONES: { value: ToneType; label: string }[] = [
-  { value: "gen-alpha", label: "Gen Alpha" },
-  { value: "gen-z", label: "Gen Z" },
-  { value: "casual", label: "Casual" },
-  { value: "friendly", label: "Friendly" },
-  { value: "flirty", label: "Flirty" },
-  { value: "neutral", label: "Neutral" },
-  { value: "professional", label: "Professional" },
-  { value: "formal", label: "Formal" },
-  { value: "custom", label: "✏️ Custom…" },
-];
+function buildTones(t: (key: TranslationKey) => string): { value: ToneType; label: string }[] {
+  return [
+    { value: "gen-alpha", label: t("tone.genAlpha") },
+    { value: "gen-z", label: t("tone.genZ") },
+    { value: "casual", label: t("tone.casual") },
+    { value: "friendly", label: t("tone.friendly") },
+    { value: "flirty", label: t("tone.flirty") },
+    { value: "neutral", label: t("tone.neutral") },
+    { value: "professional", label: t("tone.professional") },
+    { value: "formal", label: t("tone.formal") },
+    { value: "custom", label: `✏️ ${t("tone.custom")}` },
+  ];
+}
 
-const AGE_STYLES: { value: AgeStyle; label: string }[] = [
-  { value: "13-17", label: "13–17" },
-  { value: "18-21", label: "18–21" },
-  { value: "22-25", label: "22–25" },
-  { value: "26-30", label: "26–30" },
-  { value: "31-40", label: "31–40" },
-  { value: "41-50", label: "41–50" },
-  { value: "51-65", label: "51–65" },
-  { value: "65+", label: "65+" },
-  { value: "custom", label: "Other (exact age)" },
-  { value: "none", label: "No preference" },
-];
+function buildAgeStyles(t: (key: TranslationKey) => string): { value: AgeStyle; label: string }[] {
+  return [
+    { value: "13-17", label: "13–17" },
+    { value: "18-21", label: "18–21" },
+    { value: "22-25", label: "22–25" },
+    { value: "26-30", label: "26–30" },
+    { value: "31-40", label: "31–40" },
+    { value: "41-50", label: "41–50" },
+    { value: "51-65", label: "51–65" },
+    { value: "65+", label: "65+" },
+    { value: "custom", label: t("ageStyle.other") },
+    { value: "none", label: t("ageStyle.noPreference") },
+  ];
+}
 
-const SLANG: { value: SlangLevel; label: string }[] = [
-  { value: "high", label: "High" },
-  { value: "medium", label: "Medium" },
-  { value: "low", label: "Low" },
-  { value: "none", label: "None" },
-];
+function buildSlang(t: (key: TranslationKey) => string): { value: SlangLevel; label: string }[] {
+  return [
+    { value: "high", label: t("slang.high") },
+    { value: "medium", label: t("slang.medium") },
+    { value: "low", label: t("slang.low") },
+    { value: "none", label: t("slang.none") },
+  ];
+}
 
 export function ToneControls({
   value,
@@ -43,9 +51,14 @@ export function ToneControls({
   /** When true, nothing is preselected until the user picks. */
   allowUnset?: boolean;
 }) {
+  const { t } = useTranslation();
+  const TONES = buildTones(t);
+  const AGE_STYLES = buildAgeStyles(t);
+  const SLANG = buildSlang(t);
+
   return (
     <div className="space-y-5">
-      <Field label="Tone">
+      <Field label={t("toneControls.toneLabel")}>
         <PillGroup
           options={TONES}
           value={allowUnset && !value.tone ? null : value.tone}
@@ -57,12 +70,12 @@ export function ToneControls({
           <input
             value={value.customTone ?? ""}
             onChange={(event) => onChange({ ...value, customTone: event.target.value })}
-            placeholder="Describe the tone, e.g. dry and sarcastic but polite"
+            placeholder={t("toneControls.customTonePlaceholder")}
             className={`${inputClass} mt-2`}
           />
         ) : null}
       </Field>
-      <Field label="Sound like age">
+      <Field label={t("toneControls.ageLabel")}>
         <PillGroup
           options={AGE_STYLES}
           value={allowUnset && !value.ageStyle ? null : value.ageStyle}
@@ -81,12 +94,12 @@ export function ToneControls({
               const digits = event.target.value.replace(/\D/g, "").slice(0, 3);
               onChange({ ...value, customAge: digits === "" ? null : Number(digits) });
             }}
-            placeholder="Exact age, e.g. 37"
+            placeholder={t("toneControls.customAgePlaceholder")}
             className={`${inputClass} mt-2`}
           />
         ) : null}
       </Field>
-      <Field label="Slang level">
+      <Field label={t("toneControls.slangLabel")}>
         <PillGroup
           options={SLANG}
           value={allowUnset && !value.slangLevel ? null : value.slangLevel}
@@ -99,9 +112,9 @@ export function ToneControls({
         className="flex w-full items-center justify-between rounded-xl border border-border bg-field px-3.5 py-3 text-left"
       >
         <span>
-          <span className="block text-sm">Internet language</span>
+          <span className="block text-sm">{t("toneControls.internetLanguage")}</span>
           <span className="block text-xs text-muted-foreground">
-            Native shortcuts, abbreviations, texting patterns
+            {t("toneControls.internetLanguageHint")}
           </span>
         </span>
         <span
