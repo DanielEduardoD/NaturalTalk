@@ -1,6 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Globe2, Lock, Sparkles, Users } from "lucide-react";
 import { useSpeakerStore } from "@/stores/speakerStore";
+import { useTranslation } from "@/i18n/useTranslation";
+import type { TranslationKey } from "@/i18n/locales/en";
 
 export const Route = createFileRoute("/landing")({
   head: () => ({
@@ -23,33 +25,37 @@ export const Route = createFileRoute("/landing")({
   component: Landing,
 });
 
-const FEATURES = [
-  {
-    icon: Users,
-    title: "Knows who you're talking to",
-    body: "Pronouns, formality and hierarchy adapt to each person you add — partner, boss, or a friend's grandma.",
-  },
-  {
-    icon: Globe2,
-    title: "Real dialects, not textbook",
-    body: "Down to the region: Northern Mexican, Kansai Japanese, Southern Vietnamese and more.",
-  },
-  {
-    icon: Sparkles,
-    title: "Sounds your age",
-    body: "Gen Alpha to formal business. Slang level, internet language and per-message moods are yours to set.",
-  },
-  {
-    icon: Lock,
-    title: "Private by design",
-    body: "Conversations, profiles and saved words live in your browser only. Exports can be password-encrypted.",
-  },
-];
+function buildFeatures(t: (key: TranslationKey) => string) {
+  return [
+    {
+      icon: Users,
+      title: t("landing.feature.whoTalking.title"),
+      body: t("landing.feature.whoTalking.body"),
+    },
+    {
+      icon: Globe2,
+      title: t("landing.feature.dialects.title"),
+      body: t("landing.feature.dialects.body"),
+    },
+    {
+      icon: Sparkles,
+      title: t("landing.feature.age.title"),
+      body: t("landing.feature.age.body"),
+    },
+    {
+      icon: Lock,
+      title: t("landing.feature.privacy.title"),
+      body: t("landing.feature.privacy.body"),
+    },
+  ];
+}
 
 function Landing() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const setSeenLanding = useSpeakerStore((state) => state.setSeenLanding);
   const hasCompletedOnboarding = useSpeakerStore((state) => state.hasCompletedOnboarding);
+  const FEATURES = buildFeatures(t);
 
   const start = () => {
     setSeenLanding();
@@ -62,11 +68,10 @@ function Landing() {
         💬
       </div>
       <h1 className="mt-6 font-display text-3xl leading-tight font-bold">
-        Translations that sound like <span className="text-primary">you</span>
+        {t("landing.heroTitlePrefix")} <span className="text-primary">{t("landing.heroTitleHighlight")}</span>
       </h1>
       <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-        NaturalTalk is a context-aware translator. Tell it who you're writing to and it rewrites
-        your message the way a native speaker your age would actually send it.
+        {t("landing.heroSubtitle")}
       </p>
 
       <div className="mt-9 space-y-4">
@@ -82,11 +87,9 @@ function Landing() {
       </div>
 
       <section className="mt-8 rounded-2xl border border-border p-4">
-        <h2 className="font-display text-sm font-semibold">Your data, your device</h2>
+        <h2 className="font-display text-sm font-semibold">{t("landing.privacy.title")}</h2>
         <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-          Profiles, conversations and vocabulary are stored locally in this browser. Message text is
-          sent to the AI provider only to produce a translation, and nothing is kept on our side. If
-          you clear browser data or uninstall the app, your history is gone — export a backup first.
+          {t("landing.privacy.body")}
         </p>
       </section>
 
@@ -95,7 +98,7 @@ function Landing() {
         onClick={start}
         className="mt-8 w-full rounded-xl bg-primary py-3.5 text-sm font-semibold text-primary-foreground"
       >
-        Get started
+        {t("landing.getStarted")}
       </button>
       <button
         type="button"
@@ -105,7 +108,7 @@ function Landing() {
         }}
         className="mt-3 w-full py-2 text-xs text-muted-foreground underline"
       >
-        Skip intro
+        {t("landing.skipIntro")}
       </button>
     </main>
   );
