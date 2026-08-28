@@ -21,6 +21,8 @@ import type { Message, MessageMood, ToneSettings, TranslationResponse, VocabFlag
 import { cn } from "@/lib/utils";
 import { inputClass, Pill } from "@/components/common/ui-kit";
 import { RubyText } from "@/components/common/RubyText";
+import { useTranslation } from "@/i18n/useTranslation";
+import type { TranslationKey } from "@/i18n/locales/en";
 
 export const Route = createFileRoute("/conversation/$id")({
   head: () => ({
@@ -56,22 +58,26 @@ const MOODS: MessageMood[] = [
   "custom",
 ];
 
-const MOOD_CHIP_LABELS: Record<MessageMood, string> = {
-  default: "Default",
-  funny: "😄 Funny",
-  dramatic: "🎭 Dramatic",
-  affectionate: "🫶 Affectionate",
-  excited: "🎉 Excited",
-  apologetic: "🙏 Apologetic",
-  serious: "🧭 Serious",
-  assertive: "💪 Assertive",
-  grateful: "🌸 Grateful",
-  custom: "✏️ Custom",
-};
+function buildMoodChipLabels(t: (key: TranslationKey) => string): Record<MessageMood, string> {
+  return {
+    default: t("mood.default"),
+    funny: `😄 ${t("mood.funny")}`,
+    dramatic: `🎭 ${t("mood.dramatic")}`,
+    affectionate: `🫶 ${t("mood.affectionate")}`,
+    excited: `🎉 ${t("mood.excited")}`,
+    apologetic: `🙏 ${t("mood.apologetic")}`,
+    serious: `🧭 ${t("mood.serious")}`,
+    assertive: `💪 ${t("mood.assertive")}`,
+    grateful: `🌸 ${t("mood.grateful")}`,
+    custom: `✏️ ${t("mood.custom")}`,
+  };
+}
 
 function ConversationView() {
   const { id } = useParams({ from: "/conversation/$id" });
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const MOOD_CHIP_LABELS = buildMoodChipLabels(t);
 
   const profile = useSpeakerStore((state) => state.profile);
   const conversations = useConversationStore((state) => state.conversations);
@@ -125,7 +131,7 @@ function ConversationView() {
   if (!conversation || !profile) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background">
-        <p className="text-sm text-muted-foreground">Loading conversation…</p>
+        <p className="text-sm text-muted-foreground">{t("conversation.loading")}</p>
       </main>
     );
   }
@@ -218,7 +224,7 @@ function ConversationView() {
       setStatus("loaded");
     } catch (error) {
       setErrorMessage(
-        error instanceof TranslationError ? error.message : "Something went wrong. Try again.",
+        error instanceof TranslationError ? error.message : t("translationCard.unexpectedError"),
       );
       setStatus("error");
     }
@@ -308,7 +314,7 @@ function ConversationView() {
       data-accent={appearance.accent}
     >
       <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border bg-background/95 px-4 py-3 backdrop-blur">
-        <button type="button" onClick={() => void navigate({ to: "/" })} aria-label="Back">
+        <button type="button" onClick={() => void navigate({ to: "/" })} aria-label={t("conversation.backAria")}>
           <ArrowLeft className="size-5 text-muted-foreground" />
         </button>
         <div className="min-w-0 flex-1 text-center">
@@ -318,7 +324,7 @@ function ConversationView() {
             {recipient.region ? ` · ${recipient.region}` : recipient.dialect ? ` · ${recipient.dialect}` : ""}
           </p>
         </div>
-        <button type="button" onClick={() => setSettingsOpen(true)} aria-label="Conversation settings">
+        <button type="button" onClick={() => setSettingsOpen(true)} aria-label={t("conversation.settingsAria")}>
           <Settings2 className="size-5 text-muted-foreground" />
         </button>
       </header>
@@ -326,7 +332,7 @@ function ConversationView() {
       <div className="flex-1 space-y-4 px-4 py-5">
         {messages.length === 0 ? (
           <p className="pt-16 text-center text-sm text-muted-foreground">
-            No messages yet. Write something below and NaturalTalk will make it sound natural.
+            {t("conversation.empty")}
           </p>
         ) : null}
 
@@ -334,7 +340,7 @@ function ConversationView() {
           <div key={message.id} className="space-y-2">
             {message.receivedText ? (
               <div className="mr-auto max-w-[85%]">
-                <p className="mb-1 text-[11px] text-muted-foreground">Received</p>
+                <p className="mb-1 text-[11px] text-muted-foreground">{t("conversation.received")}</p>
                 <div className={cn("bg-surface px-4 py-3", bubbleClass(appearance.bubbleStyle, "incoming"))}>
                   <p dir={isRTL ? "rtl" : "ltr"} className="native-text text-sm">
                     {message.receivedText}
@@ -371,14 +377,14 @@ function ConversationView() {
                       }}
                       className="rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-accent-foreground"
                     >
-                      Save & retranslate
+                      {t("conversation.saveAndRetranslate")}
                     </button>
                     <button
                       type="button"
                       onClick={() => setEditingId(null)}
                       className="rounded-lg border border-border px-3 py-1.5 text-xs"
                     >
-                      Cancel
+                      {t("conversation.cancel")}
                     </button>
                   </div>
                 </div>
@@ -392,18 +398,18 @@ function ConversationView() {
                   )}
                 >
                   <p dir={isRTL ? "rtl" : "ltr"} className="native-text text-base leading-relaxed">
-                                  <RubyText text={message.translation} ruby={message.ruby} />
+                    <RubyText text={message.translation} ruby={message.ruby} />
                   </p>
                   {message.romanization ? (
                     <p className="mt-1 text-xs text-muted-foreground">{message.romanization}</p>
                   ) : null}
                   {message.literal ? (
                     <p className="mt-2 border-t border-border/60 pt-2 text-xs text-muted-foreground">
-                      <span className="uppercase">Literally:</span> {message.literal}
+                      <span className="uppercase">{t("conversation.literally")}</span> {message.literal}
                     </p>
                   ) : null}
                   <p className="mt-1 text-xs text-muted-foreground italic">
-                    You wrote: {message.sourceText}
+                    {t("conversation.youWrote", { text: message.sourceText })}
                   </p>
                 </button>
               )}
@@ -412,8 +418,8 @@ function ConversationView() {
                 {message.mood && message.mood !== "default" ? (
                   <span>{MOOD_CHIP_LABELS[message.mood]}</span>
                 ) : null}
-                <button type="button" onClick={() => regenerate(message)} aria-label="Regenerate">
-                  Regenerate
+                <button type="button" onClick={() => regenerate(message)} aria-label={t("conversation.regenerate")}>
+                  {t("conversation.regenerate")}
                 </button>
                 <button
                   type="button"
@@ -421,16 +427,16 @@ function ConversationView() {
                     setEditingId(message.id);
                     setEditingText(message.sourceText);
                   }}
-                  aria-label="Edit message"
+                  aria-label={t("conversation.editAria")}
                 >
                   <Pencil className="size-3.5" />
                 </button>
                 <button
                   type="button"
                   onClick={() => {
-                    if (confirm("Delete this message?")) void deleteMessage(id, message.id);
+                    if (confirm(t("conversation.deleteConfirm"))) void deleteMessage(id, message.id);
                   }}
-                  aria-label="Delete message"
+                  aria-label={t("conversation.deleteAria")}
                 >
                   <Trash2 className="size-3.5" />
                 </button>
@@ -451,8 +457,8 @@ function ConversationView() {
         <div className="flex gap-1 rounded-xl bg-field p-1 text-xs">
           {(
             [
-              ["single", "My Message"],
-              ["dual", "Received + Reply"],
+              ["single", t("conversation.mode.single")],
+              ["dual", t("conversation.mode.dual")],
             ] as const
           ).map(([value, label]) => (
             <button
@@ -478,21 +484,21 @@ function ConversationView() {
             onClick={() => setShowLanguages((v) => !v)}
             className="underline"
           >
-            {showLanguages ? "Hide" : "Change languages"}
+            {showLanguages ? t("conversation.hideLanguages") : t("conversation.changeLanguages")}
           </button>
         </div>
 
         {showLanguages ? (
           <div className="space-y-3 rounded-xl border border-border bg-surface p-3">
             <LanguagePicker
-              label="I write in"
+              label={t("conversation.iWriteIn")}
               value={recipient.sourceLanguage}
               onChange={(code) =>
                 void updateConversation(id, { recipient: { ...recipient, sourceLanguage: code } })
               }
             />
             <LanguagePicker
-              label="Translate into"
+              label={t("conversation.translateInto")}
               value={recipient.targetLanguage}
               onChange={(code) =>
                 void updateConversation(id, {
@@ -513,7 +519,7 @@ function ConversationView() {
               }
               className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-xs"
             >
-              <ArrowLeftRight className="size-3.5" /> Swap directions
+              <ArrowLeftRight className="size-3.5" /> {t("conversation.swapDirections")}
             </button>
           </div>
         ) : null}
@@ -523,7 +529,7 @@ function ConversationView() {
             value={received}
             onChange={(event) => setReceived(event.target.value)}
             rows={2}
-            placeholder="Paste what they sent you"
+            placeholder={t("conversation.receivedPlaceholder")}
             className={`${inputClass} bg-surface text-sm`}
           />
         ) : null}
@@ -532,7 +538,7 @@ function ConversationView() {
           value={text}
           onChange={(event) => setText(event.target.value)}
           rows={2}
-          placeholder={mode === "dual" ? "My reply" : "What do you want to say?"}
+          placeholder={mode === "dual" ? t("conversation.replyPlaceholder") : t("conversation.messagePlaceholder")}
           className={inputClass}
         />
 
@@ -563,7 +569,7 @@ function ConversationView() {
           <input
             value={context}
             onChange={(event) => setContext(event.target.value)}
-            placeholder="Context for this message"
+            placeholder={t("conversation.contextPlaceholder")}
             className={inputClass}
           />
         ) : (
@@ -572,7 +578,7 @@ function ConversationView() {
             onClick={() => setShowContext(true)}
             className="text-xs text-muted-foreground underline"
           >
-            Add context for this message
+            {t("conversation.addContext")}
           </button>
         )}
 
@@ -582,7 +588,7 @@ function ConversationView() {
           onClick={translate}
           className="w-full rounded-xl bg-accent py-3.5 text-sm font-semibold text-accent-foreground disabled:opacity-40"
         >
-          Translate
+          {t("conversation.translate")}
         </button>
       </div>
 
@@ -618,8 +624,8 @@ function ConversationView() {
         <div className="fixed inset-0 z-50 overflow-y-auto bg-background">
           <div className="mx-auto w-full max-w-md px-5 py-6">
             <div className="flex items-center justify-between">
-              <h2 className="font-display text-xl font-bold">Conversation settings</h2>
-              <button type="button" onClick={() => setSettingsOpen(false)} aria-label="Close">
+              <h2 className="font-display text-xl font-bold">{t("conversation.settings.title")}</h2>
+              <button type="button" onClick={() => setSettingsOpen(false)} aria-label={t("conversation.settings.closeAria")}>
                 <X className="size-5 text-muted-foreground" />
               </button>
             </div>
@@ -630,14 +636,14 @@ function ConversationView() {
               />
             </div>
             <div className="mt-8">
-              <h3 className="mb-4 font-display text-base font-semibold">Style for this chat</h3>
+              <h3 className="mb-4 font-display text-base font-semibold">{t("conversation.settings.styleForChat")}</h3>
               <ToneControls
                 value={tone}
                 onChange={(next) => void updateConversation(id, { toneOverrides: next })}
               />
             </div>
             <div className="mt-8">
-              <h3 className="mb-4 font-display text-base font-semibold">Look of this chat</h3>
+              <h3 className="mb-4 font-display text-base font-semibold">{t("conversation.settings.lookOfChat")}</h3>
               <ChatAppearanceControls
                 value={appearance}
                 onChange={(next) =>
@@ -653,7 +659,7 @@ function ConversationView() {
               onClick={() => setSettingsOpen(false)}
               className="mt-8 w-full rounded-xl bg-accent py-3.5 text-sm font-semibold text-accent-foreground"
             >
-              Done
+              {t("conversation.settings.done")}
             </button>
           </div>
         </div>
