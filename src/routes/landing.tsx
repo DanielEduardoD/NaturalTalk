@@ -3,6 +3,7 @@ import { Globe2, Lock, Sparkles, Users } from "lucide-react";
 import { useSpeakerStore } from "@/stores/speakerStore";
 import { useTranslation } from "@/i18n/useTranslation";
 import type { TranslationKey } from "@/i18n/locales/en";
+import { UILanguagePicker } from "@/components/common/UILanguagePicker";
 
 export const Route = createFileRoute("/landing")({
   head: () => ({
@@ -64,8 +65,11 @@ function Landing() {
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-md px-5 pt-16 pb-12">
-      <div className="flex size-16 items-center justify-center rounded-3xl bg-primary/15 text-3xl">
-        💬
+      <div className="flex items-center justify-between">
+        <div className="flex size-16 items-center justify-center rounded-3xl bg-primary/15 text-3xl">
+          💬
+        </div>
+        <UILanguagePicker compact />
       </div>
       <h1 className="mt-6 font-display text-3xl leading-tight font-bold">
         {t("landing.heroTitlePrefix")} <span className="text-primary">{t("landing.heroTitleHighlight")}</span>
