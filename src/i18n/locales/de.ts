@@ -251,7 +251,7 @@ const de: Record<TranslationKey, string> = {
   "vocabulary.title": "Vokabeln",
   "vocabulary.filterAll": "Alle",
   "vocabulary.searchPlaceholder": "Gespeicherte Wörter suchen",
-  "vocabulary.empty": "Noch keine gespeicherten Wörter. Tippe bei Vokabelvorschlägen einer Übersetzung auf „Speichern".",
+  "vocabulary.empty": "Noch keine gespeicherten Wörter. Tippe bei Vokabelvorschlägen einer Übersetzung auf „Speichern“.",
   "vocabulary.deleteAria": "Wort löschen",
   "vocabulary.savedOn": "Gespeichert am {{date}}",
   "vocabulary.notePlaceholder": "Persönliche Notiz hinzufügen...",
